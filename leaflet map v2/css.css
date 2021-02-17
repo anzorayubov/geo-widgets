@@ -1,0 +1,58 @@
+#map {
+    height: 100%;
+}
+.ruler {
+    position: fixed;
+    display: flex;
+    border: 1px solid gray;
+    top: -36px;
+    width: 100%;
+    height: 30px;
+    border-radius: 5px;
+    opacity: 0;
+    transition: background 200ms;
+    /*background: linear-gradient(45deg, transparent, black);*/
+}
+.item {
+    width: 300px;
+    border: 1px solid gray;
+    align-items: center;
+    display: flex;
+    color: gray;
+    position: relative;
+}
+.item span:first-child {
+    padding: 4px;
+}
+.maxValue {
+    position: absolute;
+    right: 0;
+}
+
+.inputs {
+    position: fixed;
+    top: -68px;
+}
+
+.inputs input {
+    margin-right: 4px;
+}
+
+mat-slider {
+    width: 50%;
+    position: fixed;
+    top: -82px;
+    left: 163px;
+}
+.marker {
+    width: 4px;
+    background: #305680;
+    position: absolute;
+    right: 0;
+    height: 100%;
+    border-radius: 6px;
+}
+.marker:hover {
+    background: #8181ef;
+    cursor: col-resize;
+}
