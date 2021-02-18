@@ -1,11 +1,11 @@
 const PORT = '1880'
 
 self.onInit = function() {
-    let $injector = self.ctx.$scope.$injector;
-    let assetService = $injector.get(self.ctx.servicesMap.get('assetService'));
-    let attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'));
+    const $injector = self.ctx.$scope.$injector;
+    const assetService = $injector.get(self.ctx.servicesMap.get('assetService'));
+    const attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'));
 
-    let map = L.map("map")
+    const map = L.map("map")
     googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
         maxZoom: 50,
         subdomains:['mt0','mt1','mt2','mt3'],
@@ -78,8 +78,8 @@ self.onInit = function() {
                 .filter(val => val > 0)
                 .sort()
 
-            let minValue = Math.min.apply(null, arrayValue)
-            let maxValue = Math.max.apply(null, arrayValue)
+            const minValue = Math.min.apply(null, arrayValue)
+            const maxValue = Math.max.apply(null, arrayValue)
 
             $('.minValue').text(minValue)
             $('.maxValue').text(maxValue)
@@ -101,8 +101,8 @@ self.onInit = function() {
             }
 
             // Dynamic styles
-            let low = document.getElementById('lowColor')
-            let high = document.getElementById('highColor')
+            const low = document.getElementById('lowColor')
+            const high = document.getElementById('highColor')
 
             let updateGradient = function() {
                 console.log([low.value, high.value])
@@ -115,15 +115,15 @@ self.onInit = function() {
             low.addEventListener('input', updateGradient)
             high.addEventListener('input', updateGradient)
 
-            let scale = chroma.scale('OrRd').classes([0, 0.55, 0.85, 1])// <- массив с отрезками значений
+            let scale = chroma.scale('OrRd').classes(3)// <- массив с отрезками значений
             layer.setColor(scale)
 
             console.log('layer', layer)
 
             setTimeout(() => {
-                let minColor = layer.options.color.colors()[0]
-                let midColor = layer.options.color.colors()[4]
-                let maxColor = layer.options.color.colors()[8]
+                const minColor = layer.options.color.colors()[0]
+                const midColor = layer.options.color.colors()[4]
+                const maxColor = layer.options.color.colors()[8]
 
                 // $('.ruler').css({'opacity': 0})
                 // $('.ruler').css({'background': 'linear-gradient(45deg, transparent, black)'})
@@ -135,42 +135,72 @@ self.onInit = function() {
             }, 500)
 
             document.onmousedown = (event) => {
-                if (type != 'marker') return
                 const type = event.target.className
+                if (type != 'marker') return
                 const parent = event.target.parentNode
                 const coords = parent.getBoundingClientRect()
+                const rangeArray = [0]
+                const rulerWidth = $('.ruler')[0].offsetWidth
+                const items = Array.from($('.ruler .item'))
 
                 document.onmousemove = e => {
                     const delta = e.pageX - coords.right // на сколько изменилось положение
-                    let value = coords.width + delta // значение width
+                    const value = coords.width + delta // значение width
                     parent.style.width = value + 'px'
 
+                    let itemsWidth = 0
+
+                    items.forEach((item, index) => {
+                        itemsWidth += item.offsetWidth
+                    })
+
+
+                    // если ширина items достигла максимума
+                    if (itemsWidth+2 == rulerWidth) {
+                        const parent = event.target.parentNode
+                        const coords = parent.getBoundingClientRect()
+                        let delt = e.pageX - coords.right // на сколько изменилось положение
+
+                        console.log('delta', delt)
+
+                        items.forEach(item => {
+                            if (parent != item) {
+                                // console.log(item.offsetWidth)
+                                // console.log(item.style.width)
+                                // console.log(item) // <- соседние items
+                                // item.style.width = (item.offsetWidth - (delt/2)) +'px'
+                                // item.style.offsetWidth = (item.offsetWidth - (delt/2))
+
+                            }
+                        })
+                        delt = 0
+                    }
+
+                    // console.log('itemsWidth', itemsWidth)
                     // добавить ограничитель на максимальную ширину
                     // если достигло масимума - то вычитать поровну с соседних items
                 }
                 document.onmouseup = () => {
                     document.onmousemove = null
                     document.onmouseup = null
-                    const rangeArray = [0]
-                    const rulerWidth = $('.ruler')[0].offsetWidth
-                    const items = Array.from($('.ruler .item'))
+
 
                     items.forEach((item, index) => {
-                        let persent = rulerWidth * (item.offsetWidth/10000)
+                        const persent = rulerWidth * (item.offsetWidth/10000)
                         rangeArray.push((maxValue*(persent / 100)).toFixed(4))
                     })
 
-                    let scale = chroma.scale('OrRd').classes(rangeArray)
+                    const scale = chroma.scale('OrRd').classes(rangeArray)
                     layer.setColor(scale)
                 }
             }
 
             layer.on("click", function(e) {
                 if (e.value !== null) {
-                    let v = e.value//.toFixed(3)
-                    let html = `<span class="popupText">${v}</span>`
+                    const v = e.value//.toFixed(3)
+                    const html = `<span class="popupText">${v}</span>`
 
-                    let popup = L.popup()
+                    const popup = L.popup()
                         .setLatLng(e.latlng)
                         .setContent(html)
                         .openOn(map)
@@ -179,10 +209,10 @@ self.onInit = function() {
 
             layer.on("mousemove", function(e) {
                 if (e.value !== null) {
-                    let v = e.value.toFixed(3)
-                    let html = `<span class="popupText">${v}</span>`
+                    const v = e.value.toFixed(3)
+                    const html = `<span class="popupText">${v}</span>`
 
-                    let popup = L.popup()
+                    const popup = L.popup()
                         .setLatLng(e.latlng)
                         .setContent(html)
                         .openOn(map)

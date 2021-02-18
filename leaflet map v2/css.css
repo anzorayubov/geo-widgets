@@ -14,12 +14,17 @@
     /*background: linear-gradient(45deg, transparent, black);*/
 }
 .item {
-    width: 300px;
+    width: 33.3333%;
+    height: 100%;
     border: 1px solid gray;
     align-items: center;
     display: flex;
     color: gray;
     position: relative;
+}
+.item:last-child {
+    /*position: absolute;*/
+    /*right: 0;*/
 }
 .item span:first-child {
     padding: 4px;
@@ -53,6 +58,6 @@ mat-slider {
     border-radius: 6px;
 }
 .marker:hover {
-    background: #8181ef;
+    background: #3388ff;
     cursor: col-resize;
 }
