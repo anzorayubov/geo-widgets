@@ -1,18 +1,17 @@
 #map {
     height: 100%;
 }
+
 .ruler {
     position: fixed;
     display: flex;
-    border: 1px solid gray;
     top: -36px;
     width: 100%;
     height: 30px;
     border-radius: 5px;
-    opacity: 0;
     transition: background 200ms;
-    /*background: linear-gradient(45deg, transparent, black);*/
 }
+
 .item {
     width: 33.3333%;
     height: 100%;
@@ -22,16 +21,21 @@
     color: gray;
     position: relative;
 }
-.item:last-child {
-    /*position: absolute;*/
-    /*right: 0;*/
-}
+
 .item span:first-child {
     padding: 4px;
 }
+
 .maxValue {
     position: absolute;
-    right: 0;
+    right: -70px;
+    top: 5px;
+}
+
+.minValue {
+    position: absolute;
+    left: -70px;
+    top: 5px;
 }
 
 .inputs {
@@ -49,6 +53,7 @@ mat-slider {
     top: -82px;
     left: 163px;
 }
+
 .marker {
     width: 4px;
     background: #305680;
@@ -57,7 +62,18 @@ mat-slider {
     height: 100%;
     border-radius: 6px;
 }
+
 .marker:hover {
     background: #3388ff;
     cursor: col-resize;
+}
+
+#slider {
+    position: fixed;
+    top: -30px;
+    width: 100%;
+}
+
+[data-handle="0"], [data-handle="3"] {
+    display: none;
 }

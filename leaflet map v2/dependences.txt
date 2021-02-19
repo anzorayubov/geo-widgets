@@ -6,3 +6,5 @@ https://cdn.jsdelivr.net/npm/leaflet-geotiff@0.2.0/leaflet-geotiff.min.js
 //cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js
 https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js
 https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css
+https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js
+https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.css
