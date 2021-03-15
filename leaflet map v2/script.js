@@ -1,15 +1,16 @@
 const PORT = '1880'
-
+const log = (text = '', data) => console.log(text, data)
 self.onInit = function () {
     const $injector = self.ctx.$scope.$injector;
     const assetService = $injector.get(self.ctx.servicesMap.get('assetService'));
     const attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'));
-
     const map = L.map("map")
     googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
         maxZoom: 50,
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
     }).addTo(map)
+
+    self.ctx.$scope.info = []
 
     // добавление тулбара
     try {
@@ -66,12 +67,12 @@ self.onInit = function () {
                 }
             }
             let s
-
+            // console.log('тут ещё пытаемся', data)
             if (dataType == 'asc')
                 s = L.ScalarField.fromASCIIGrid(data);
             else if (dataType == 'tiff')
                 s = L.ScalarField.fromGeoTIFF(data)
-
+            // console.log('а тут уже полномочия, как бы всё')
             let arrayValue = s.grid
                 .flat()
                 .filter(val => val != null)
@@ -79,8 +80,8 @@ self.onInit = function () {
                 .filter(val => val > 0)
                 .sort()
 
-            const minValue = Math.min.apply(null, arrayValue)
-            const maxValue = Math.max.apply(null, arrayValue)
+            const minValue = Math.min(...arrayValue)
+            const maxValue = Math.max(...arrayValue)
 
             $('.minValue').text(minValue)
             $('.maxValue').text(maxValue)
@@ -100,12 +101,16 @@ self.onInit = function () {
                 layer.setFilter(f)
             }
 
+            // console.log('s', s)
+
+            // Todo
+            // отключить автоматичекое перерисовывание!! в нужный момент вызывать layer.needRedraw()
+
             // Dynamic styles
             const low = document.getElementById('lowColor')
             const high = document.getElementById('highColor')
 
             let updateGradient = function () {
-                console.log([low.value, high.value])
                 let scale = chroma.scale([low.value, high.value]).domain(s.range)
                 layer.setColor(scale)
             }
@@ -128,9 +133,10 @@ self.onInit = function () {
                         'min': minValue,
                         'max': maxValue
                     }
-                });
+                })
+
                 slider.noUiSlider.on('change.one', function (e) {
-                    e.map(num => parseInt(num))
+                    e.map(num => +num)
                     const scale = chroma.scale('OrRd').classes(e)
                     layer.setColor(scale)
                 })
@@ -139,10 +145,14 @@ self.onInit = function () {
 
                 IUconnects[0].childNodes.forEach((item, index) => {
                     item.style.backgroundColor = colors[index]
+                    // self.ctx.$scope.info.push({color: colors[index]})
                 })
-            }, 500)
 
-            let scale = chroma.scale('OrRd').classes(3)// <- массив с отрезками значений
+                self.ctx.detectChanges()
+            }, 1000)
+
+            // тут вставить корреткные данные
+            let scale = chroma.scale('OrRd').classes([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
             layer.setColor(scale)
 
             layer.on("click", function (e) {
@@ -171,6 +181,9 @@ self.onInit = function () {
 
             layer.addTo(map)
             map.fitBounds(layer.getBounds()) // <- куда наводить карту
+
+
+            // console.log('layer', layer)
         }
     }
 
@@ -327,10 +340,64 @@ self.onInit = function () {
         })
     }
 
-
     setTimeout(function () {
         $('.leaflet-interactive').css({'pointer-events': 'none'})
-    }, 1000);
+
+        self, ctx.data.forEach(item => {
+            if (item.dataKey.name == 'additionalInfo') {
+                const data = JSON.parse(item.data[0][1])
+
+                self.ctx.$scope.info = data
+                self.ctx.detectChanges()
+            }
+        })
+
+        // тут логика при редактировании инпутов
+        $('.infoTable input').change((event) => {
+            const cardIndex = event.target.closest('mat-card').dataset.index
+            const inputValue = event.target.value
+            const inputType = event.target.dataset.type
+            const dataArray = []
+
+            // работа с активом
+            let id = self.ctx.data[0].datasource.entityId
+            let attributesArray = [{key: 'additionalInfo', value: inputValue}]
+
+            ctx.attributeService.getEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE', ['additionalInfo'])
+                .subscribe(responce => {
+                    let dataArray = []
+
+
+                    if (responce?.length < 1 || responce[0].value == 'null') {
+                        const IUconnects = document.getElementsByClassName("noUi-connects")
+                        IUconnects[0].childNodes.forEach((item, index) => {
+                            dataArray.push({
+                                cardIndex: index,
+                                value: {},
+                                color: self.ctx.$scope.info[index].color,
+                            })
+                            dataArray[cardIndex].value[inputType] = inputValue
+                        })
+
+                        attributeService.saveEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE',
+                            [{key: 'additionalInfo', value: dataArray}]).subscribe((answer) => {
+                        })
+
+                    } else {
+
+                        dataArray = responce[0].value
+                        dataArray[cardIndex].value[inputType] = inputValue
+
+                        attributeService.saveEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE',
+                            [{key: 'additionalInfo', value: dataArray}]).subscribe(() => {
+                        })
+                    }
+                })
+        })
+
+
+    }, 1000)
+
     // доки по работе с плагинами
     // https://github.com/stuartmatthews/leaflet-geotiff
     // https://github.com/IHCantabria/Leaflet.CanvasLayer.Field

@@ -1,8 +1,7 @@
 <div id="map"></div>
 <div class="ruler">
     <div class="slider">
-        <mat-slider (change)="sliderChanged($event)" id="slider_filter" value="1" min="0.00001" max="1.5"
-                    step="0.00001"></mat-slider>
+        <mat-slider (change)="sliderChanged($event)" id="slider_filter" value="1" min="0.00001" max="1.5" step="0.00001"></mat-slider>
     </div>
     <div class="inputs">
         <span class="">Min&nbsp;</span>
@@ -13,13 +12,27 @@
 
     <span class="minValue"></span>
     <span class="maxValue"></span>
-
-    <!-- для управления количеством цветов -->
-    <!--<ul>-->
-    <!--    <li id="classesPanel" style="display: block;">-->
-    <!--       <label>Nº classes</label>-->
-    <!--       <input id="classes" type="text" value="5" style="width: 15px">-->
-    <!--    </li>-->
-    <!--</ul>-->
-</div>
+ </div>
 <div id="slider"></div>
+
+<div class="infoTable">
+
+    <mat-card class="example-card" *ngFor="let item of info; let ind=index" [attr.data-index]="ind">
+
+        <mat-card-header>
+            <div class="colorDiv" style='backgroundColor: {{item.color}}'></div>
+            <span>Площадь зоны: {{item.area}}km</span>
+        </mat-card-header>
+
+        <mat-form-field class="example-full-width">
+            <mat-label>Уровень удобрений</mat-label>
+            <input autocomplete="off" matInput value="{{item.value.fertilizer}}" data-type='fertilizer'>
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width">
+            <mat-label>Уровень СЗР</mat-label>
+            <input autocomplete="off" matInput value="{{item.value.SZR}}" data-type='SZR'>
+        </mat-form-field>
+    </mat-card>
+
+</div>

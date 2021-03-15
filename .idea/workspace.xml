@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="60967bc8-78f1-4b7c-9351-a921bd5ba890" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/leaflet map v2/css.css" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet map v2/css.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/leaflet map v2/dependences.txt" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet map v2/dependences.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/leaflet map v2/html.html" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet map v2/html.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/leaflet map v2/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet map v2/script.js" afterDir="false" />
     </list>
@@ -44,7 +41,9 @@
       <workItem from="1613579561642" duration="14000" />
       <workItem from="1613580083773" duration="7000" />
       <workItem from="1613663993215" duration="18000" />
-      <workItem from="1613745921484" duration="175000" />
+      <workItem from="1613745921484" duration="299000" />
+      <workItem from="1613811514112" duration="180000" />
+      <workItem from="1615796967670" duration="213000" />
     </task>
     <servers />
   </component>
@@ -61,5 +60,6 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>

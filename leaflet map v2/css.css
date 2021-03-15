@@ -1,3 +1,95 @@
+ng-component {
+    overflow: auto;
+}
+
+.active {
+    border: 2px solid darkorange !important;
+}
+
+.example-full-width {
+    padding-bottom: 0;
+}
+
+.colorDiv {
+    margin-right: 14px;
+    border: 1px solid #eee;
+    border-radius: 11px;
+    transition: box-shadow 200ms;
+    text-align: center;
+    box-shadow: 1px 1px 2px #a9a9a978;
+}
+
+.colorDiv {
+    width: 66px;
+    height: 60px;
+    border-radius: 22px;
+}
+
+mat-card-header span {
+    display: flex;
+    align-items: center;
+}
+
+.header {
+    padding: 4px 6px 0 6px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.mat-card {
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #d2d2d2;
+}
+
+.mat-card-header-text {
+    margin: 0;
+}
+
+.mat-card-title {
+    font-size: 16px;
+}
+
+.mat-card-subtitle {
+    margin-bottom: 4px;
+}
+
+.example-card {
+    margin: 2px;
+    display: flex;
+    flex-direction: column;
+}
+
+.images {
+    display: flex;
+
+}
+
+.images img {
+    width: 100px;
+    margin: 0 10px;
+
+}
+
+.images img:hover {
+    border: 1px solid blue;
+}
+
+.infoTable {
+    position: fixed;
+    top: 0;
+    right: -302px;
+    width: 300px;
+    height: 100%;
+    z-index: 999;
+    border: 1px solid #d0d0d0;
+    border-radius: 20px;
+
+}
+
 #map {
     height: 100%;
 }
