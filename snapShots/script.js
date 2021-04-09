@@ -13,7 +13,6 @@ self.onInit = function () {
                 date: key.datasource.name,
                 snapshots: JSON.parse(key.data[0][1])
             })
-
             $scope.snapshots = snapshots
         }
     })
@@ -31,6 +30,7 @@ self.onInit = function () {
             })
             $(this).toggleClass("active")
 
+            // вывести в функцию и присвоить ее результат url
             snapshots.forEach(obj => {
                 if (obj.date === deviceName) {
                     obj.snapshots.forEach(item => {

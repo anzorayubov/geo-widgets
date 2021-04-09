@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="60967bc8-78f1-4b7c-9351-a921bd5ba890" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/leaflet map v2/html.html" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet map v2/html.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/leaflet map v2/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/leaflet map v2/script.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snapShots/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/snapShots/script.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

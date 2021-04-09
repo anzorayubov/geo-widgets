@@ -1,3 +1,8 @@
+// https://cdn.jsdelivr.net/npm/geotif
+// https://unpkg.com/browse/geotiff@1.0.4/dist-browser/geotiff.js
+// https://npmcdn.com/geotiff@0.3.6/dist/geotiff.js
+// https://raw.githubusercontent.com/Allive/geoportal_tiffs/main/geotiff.js - our repo for 0.3.6
+
 const PORT = '1880'
 const log = (text = '', data) => console.log(text, data)
 self.onInit = function () {
@@ -20,8 +25,7 @@ self.onInit = function () {
             drawCircleMarker: false,
             cutPolygon: true,
         })
-    } catch (e) {
-    }
+    } catch (e) {}
 
     let dataPromise
 
@@ -46,7 +50,7 @@ self.onInit = function () {
                 break
         }
 
-        function drawLayer(data, dataType) {
+        async function drawLayer(data, dataType) {
             let maskPolygonCoordinates = [];
             polygonsCoordinates.forEach((element) => {
                 if (element.length) {
@@ -67,12 +71,18 @@ self.onInit = function () {
                 }
             }
             let s
-            // console.log('тут ещё пытаемся', data)
-            if (dataType == 'asc')
-                s = L.ScalarField.fromASCIIGrid(data);
-            else if (dataType == 'tiff')
-                s = L.ScalarField.fromGeoTIFF(data)
-            // console.log('а тут уже полномочия, как бы всё')
+
+            try {
+                if (dataType == 'asc')
+                    s = L.ScalarField.fromASCIIGrid(data);
+                else if (dataType == 'tiff')
+                    s = await L.ScalarField.fromGeoTIFF(data)
+
+            } catch (err) {
+                // console.log('error in L.ScalarField.from...()', err)
+                return
+            }
+
             let arrayValue = s.grid
                 .flat()
                 .filter(val => val != null)
@@ -89,8 +99,16 @@ self.onInit = function () {
             s.setSpatialMask(mask)
             layer = L.canvasLayer.scalarField(s, {
                 opacity: 0.8,
-                inFilter: (v) => v > 0,
+                //inFilter: (v) => v > 0,
             }).addTo(map)
+
+            // Dynamic styles
+            const low = document.getElementById('lowColor')
+            const high = document.getElementById('highColor')
+            const updateGradient = function () {
+                let scale = chroma.scale([low.value, high.value]).domain(s.range)
+                layer.setColor(scale)
+            }
 
             /* dynamic filtering */
             self.ctx.$scope.sliderChanged = function (e) {
@@ -101,58 +119,51 @@ self.onInit = function () {
                 layer.setFilter(f)
             }
 
-            // console.log('s', s)
+            let isInitialized = false
+
+            self.ctx.$scope.changeMade = function (i, event) {
+                if (event.checked) {
+                    const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
+                    const slider = document.getElementById('slider')
+
+                    if (!isInitialized) {
+                        noUiSlider.create(slider, {
+                            start: [minValue, maxValue * 0.3, maxValue * 0.6, maxValue],
+                            connect: true,
+                            range: {'min': minValue, 'max': maxValue}
+                        })
+
+                        slider.noUiSlider.on('change.one', function (e) {
+                            e.map(num => +num)
+                            const scale = chroma.scale('OrRd').classes(e)
+                            layer.setColor(scale)
+                        })
+                        isInitialized = true
+                    } else {
+                        $('#slider').show(500)
+                    }
+
+                    const IUconnects = document.getElementsByClassName("noUi-connects")
+                    IUconnects[0].childNodes.forEach((item, index) => {
+                        item.style.backgroundColor = colors[index]
+                    })
+
+                    const scale = chroma.scale('OrRd').classes([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
+                    layer.setColor(scale)
+
+                } else if (!event.checked) {
+                    // updateGradient()
+                    $('#slider').hide(500)
+                }
+            }
 
             // Todo
             // отключить автоматичекое перерисовывание!! в нужный момент вызывать layer.needRedraw()
 
-            // Dynamic styles
-            const low = document.getElementById('lowColor')
-            const high = document.getElementById('highColor')
-
-            let updateGradient = function () {
-                let scale = chroma.scale([low.value, high.value]).domain(s.range)
-                layer.setColor(scale)
-            }
-
             low.addEventListener('input', updateGradient)
             high.addEventListener('input', updateGradient)
 
-            setTimeout(() => {
-                const colors = []
-                colors.push(layer.options.color.colors()[0])
-                colors.push(layer.options.color.colors()[4])
-                colors.push(layer.options.color.colors()[8])
-
-                // SLIDER
-                const slider = document.getElementById('slider');
-                noUiSlider.create(slider, {
-                    start: [minValue, maxValue * 0.3, maxValue * 0.6, maxValue],
-                    connect: true,
-                    range: {
-                        'min': minValue,
-                        'max': maxValue
-                    }
-                })
-
-                slider.noUiSlider.on('change.one', function (e) {
-                    e.map(num => +num)
-                    const scale = chroma.scale('OrRd').classes(e)
-                    layer.setColor(scale)
-                })
-
-                const IUconnects = document.getElementsByClassName("noUi-connects");
-
-                IUconnects[0].childNodes.forEach((item, index) => {
-                    item.style.backgroundColor = colors[index]
-                    // self.ctx.$scope.info.push({color: colors[index]})
-                })
-
-                self.ctx.detectChanges()
-            }, 1000)
-
-            // тут вставить корреткные данные
-            let scale = chroma.scale('OrRd').classes([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
+            const scale = chroma.scale(["#000000", "#FFFFFF"]).domain(s.range)
             layer.setColor(scale)
 
             layer.on("click", function (e) {
@@ -179,11 +190,8 @@ self.onInit = function () {
                 }
             })
 
-            layer.addTo(map)
             map.fitBounds(layer.getBounds()) // <- куда наводить карту
 
-
-            // console.log('layer', layer)
         }
     }
 
@@ -212,7 +220,6 @@ self.onInit = function () {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
 
         function updateAsset(e) {
-
             if (!accessCut)
                 return
 
@@ -392,7 +399,23 @@ self.onInit = function () {
                             [{key: 'additionalInfo', value: dataArray}]).subscribe(() => {
                         })
                     }
+
                 })
+
+
+            // assetService.findByName(polygonName).subscribe(asset => {
+            //     let assetForRequest = {
+            //         id: asset.id.id,
+            //         entityType: asset.id.entityType
+            //     }
+
+            //     attributeService.saveEntityAttributes(assetForRequest, 'SERVER_SCOPE', attributesArray)
+            //         .subscribe(attr => {
+
+            //         })
+            // })
+
+
         })
 
 
@@ -415,4 +438,5 @@ self.onDestroy = function () {
 }
 
 // библотека из за которой была ошибка в консоли
+// noUiSlider
 // https://unpkg.com/leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field.js
