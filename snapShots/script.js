@@ -2,13 +2,11 @@ self.onInit = function () {
     let data = self.ctx.data
     let $scope = self.ctx.$scope
     let $injector = self.ctx.$scope.$injector
-    let assetService = $injector.get(self.ctx.servicesMap.get('assetService'))
     let attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'))
-    let deviceService = $injector.get(self.ctx.servicesMap.get('deviceService'))
     let snapshots = []
 
     data.forEach(key => {
-        if (key.dataKey.name == 'snapshots') {
+        if (key.dataKey.name === 'snapshots') {
             snapshots.push({
                 date: key.datasource.name,
                 snapshots: JSON.parse(key.data[0][1])
@@ -19,39 +17,28 @@ self.onInit = function () {
 
     $(document).ready(() => {
         $(".layer").click(function (event) {
-            let box = event.target.closest('.layers')
-            let deviceName = $(this)[0].offsetParent.querySelector('.mat-card-title').innerText
-            let id = self.ctx.data[0].datasource.entityId
-            let cardTitle = event.currentTarget.querySelector('.mat-card-title').innerText
+            const deviceName = $(this)[0].offsetParent.querySelector('.mat-card-title').innerText
+            const id = self.ctx.data[0].datasource.entityId
+            const cardTitle = event.currentTarget.querySelector('.mat-card-title').innerText
             let url = ''
 
-            Array.from(box.children).forEach(item => {
-                item.classList.remove('active')
-            })
-            $(this).toggleClass("active")
-
-            // вывести в функцию и присвоить ее результат url
             snapshots.forEach(obj => {
                 if (obj.date === deviceName) {
                     obj.snapshots.forEach(item => {
-                        if (item.name === cardTitle) {
+                        if (item.name === cardTitle)
                             url = item.url
-                        }
                     })
                 }
             })
 
-            // находим отношения устройства по id
+            // save to attribute
             ctx.entityRelationService.findByTo({id: id, entityType: 'DEVICE'})
                 .subscribe(response => {
-                    let assetId = response[0].from.id
-                    let assetForRequest = {
-                        id: assetId,
-                        entityType: 'ASSET'
-                    }
-                    let attributesArray = [{key: 'tiffMaps', value: [url]}]
-                    // записываем нужный url в атрибут
-                    attributeService.saveEntityAttributes(assetForRequest, 'SERVER_SCOPE', attributesArray)
+                    const assetId = response[0].from.id
+                    const attribute = [{key: 'tiffMaps', value: [url]}]
+                    attributeService.saveEntityAttributes({
+                        id: assetId, entityType: 'ASSET'
+                    }, 'SERVER_SCOPE', attribute)
                         .subscribe(attr => {
                             self.ctx.updateAliases()
                         })
@@ -59,6 +46,22 @@ self.onInit = function () {
         })
     })
 
+    // mark Active Card
+
+    const id = self.ctx.data[0].datasource.entityFilter?.rootEntity.id
+
+    attributeService.getEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE', ['tiffMaps'])
+        .subscribe(responce => {
+            const mapUrl = responce[0].value[0]
+            snapshots.forEach(obj => {
+                obj.snapshots.forEach(item => {
+                    if (item.url === mapUrl) {
+                        item.active = true
+                        ctx.detectChanges()
+                    }
+                })
+            })
+        })
 }
 
 self.onDataUpdated = function () {

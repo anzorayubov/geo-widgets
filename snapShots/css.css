@@ -2,6 +2,11 @@ ng-component {
     overflow: auto;
 }
 
+mat-card-header mat-card-title {
+    margin: 0 !important;
+    font-size: 0 !important;
+}
+
 .active {
     border: 2px solid darkorange !important;
 }
