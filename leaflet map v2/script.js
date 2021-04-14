@@ -86,11 +86,6 @@ self.onInit = function () {
                 return
             }
 
-            const minValue = +s.range[0].toFixed(2)
-            const maxValue = +s.range[1].toFixed(2)
-
-            $('.minValue').text(minValue)
-            $('.maxValue').text(maxValue)
 
             s.setSpatialMask(mask)
 
@@ -110,12 +105,11 @@ self.onInit = function () {
             const updateGradient = function () {
                 const scale = chroma.scale([low.value, high.value]).domain(s.range)
                 layer.setColor(scale)
-
-                // думаю эти значения надо отображать над марркерами линейки
-                console.log([low.value, high.value])
             }
 
             /* dynamic filtering */
+            // ToDo возможно можно сократить зависание отфильтровав точки.
+            // думаю в изображениях много точек
             self.ctx.$scope.sliderChanged = function (e) {
                 let h = e.value
                 let f = function (v) {
@@ -124,40 +118,75 @@ self.onInit = function () {
                 layer.setFilter(f)
             }
 
-            let isInitialized = false
+            const minValue = +s.range[0].toFixed(2)
+            const maxValue = +s.range[1].toFixed(2)
+            let mid_1 = maxValue * 0.33
+            let mid_2 = maxValue * 0.66
+
+            $('.minValue').text(minValue)
+            $('.maxValue').text(maxValue)
+
+            let rulerPercentage = sessionStorage.getItem('rulerPercentage')
+
+            if (rulerPercentage) {
+                try {
+                    rulerPercentage = JSON.parse(rulerPercentage)
+                } catch (e) {
+                    console.log('try ruler',e)
+                }
+                mid_1 = maxValue * (rulerPercentage[1]/100)
+                mid_2 = maxValue * (rulerPercentage[2]/100)
+            }
+
+            const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
+            const slider = document.getElementById('slider')
+
+            noUiSlider.create(slider, {
+                start: [minValue, mid_1, mid_2, maxValue],
+                connect: true,
+                range: {'min': minValue, 'max': maxValue},
+                tooltips: [true, true, true, true],
+                format: {
+                    to: function (value) {
+                        return `${(value / (maxValue/100)).toFixed()}% | ${value.toFixed(2)}`
+                    },
+                    from: function (value) {
+                        return +value
+                    }
+                }
+            })
+            slider.noUiSlider.on('change.one', function (e) {
+                const percentage = []
+                const values = []
+
+                e.forEach(num => {
+                    values.push(+num.slice(num.indexOf('|')+1, num.length))
+                    percentage.push(parseInt(num.slice(0, num.indexOf('|'))))
+
+                    sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
+                })
+                const scale = chroma.scale('OrRd').classes(values)
+                layer.setColor(scale)
+
+                console.log(values)
+            })
+
+            const IUconnects = document.getElementsByClassName("noUi-connects")
+            IUconnects[0].childNodes.forEach((item, index) => {
+                item.style.backgroundColor = colors[index]
+            })
+
+            //const scale = chroma.scale('OrRd').classes([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
+            // layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
 
             self.ctx.$scope.changeMade = function (i, event) {
                 if (event.checked) {
-                    const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
-                    const slider = document.getElementById('slider')
-                    if (!isInitialized) {
-                        noUiSlider.create(slider, {
-                            start: [minValue, maxValue * 0.3, maxValue * 0.6, maxValue],
-                            connect: true,
-                            range: {'min': minValue, 'max': maxValue},
-                            tooltips: [true, true, true, true]
-                        })
-                        slider.noUiSlider.on('change.one', function (e) {
-                            e.map(num => +num)
-                            const scale = chroma.scale('OrRd').classes(e)
-                            layer.setColor(scale)
-                        })
-                        isInitialized = true
-                    } else {
-                        $('#slider').show(500)
-                    }
+                    $('#slider').css('pointer-events', 'auto')
 
-                    const IUconnects = document.getElementsByClassName("noUi-connects")
-                    IUconnects[0].childNodes.forEach((item, index) => {
-                        item.style.backgroundColor = colors[index]
-                    })
-
-                    const scale = chroma.scale('OrRd').classes([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
-                    layer.setColor(scale)
-
+                    layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
                 } else if (!event.checked) {
                     updateGradient()
-                    $('#slider').hide(500)
+                    $('#slider').css('pointer-events','none')
                 }
             }
 
@@ -399,6 +428,14 @@ self.onInit = function () {
                 })
         })
     }, 1000)
+
+    try {
+        exports.Emitter.Emitter.subscribe('updateMap', (data) => {
+            console.log('event:', data)
+
+
+        })
+    } catch (e) {}
 }
 
 
@@ -410,6 +447,8 @@ self.onResize = function () {
 
 self.onDestroy = function () {
 }
+
+
 
 // доки по работе с плагинами
 // https://github.com/stuartmatthews/leaflet-geotiff
