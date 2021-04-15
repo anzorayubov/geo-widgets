@@ -3,7 +3,10 @@
     <div class="slider">
         <mat-slider (change)="sliderChanged($event)" id="slider_filter" value="1" min="0.00001" max="1.5"
                     step="0.00001"></mat-slider>
-        <mat-slide-toggle id="slide_toggle" (change)="changeMade(i, $event)"></mat-slide-toggle>
+        <mat-slide-toggle
+                [checked]="isSlide_toggleChecked"
+                id="slide_toggle"
+                (change)="changeMode(i, $event)"></mat-slide-toggle>
     </div>
     <div class="inputs">
         <span class="">Min&nbsp;</span>

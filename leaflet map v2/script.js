@@ -54,6 +54,7 @@ self.onInit = function () {
         }
 
         async function drawLayer(data, dataType) {
+
             let maskPolygonCoordinates = [];
             polygonsCoordinates.forEach((element) => {
                 if (element.length) {
@@ -86,7 +87,6 @@ self.onInit = function () {
                 return
             }
 
-
             s.setSpatialMask(mask)
 
             layer = L.canvasLayer.scalarField(s, {
@@ -110,6 +110,7 @@ self.onInit = function () {
             /* dynamic filtering */
             // ToDo возможно можно сократить зависание отфильтровав точки.
             // думаю в изображениях много точек
+
             self.ctx.$scope.sliderChanged = function (e) {
                 let h = e.value
                 let f = function (v) {
@@ -167,26 +168,44 @@ self.onInit = function () {
                 })
                 const scale = chroma.scale('OrRd').classes(values)
                 layer.setColor(scale)
-
-                console.log(values)
             })
 
             const IUconnects = document.getElementsByClassName("noUi-connects")
             IUconnects[0].childNodes.forEach((item, index) => {
                 item.style.backgroundColor = colors[index]
             })
+            let slide_toggle = sessionStorage.getItem('slide_toggle')
 
-            //const scale = chroma.scale('OrRd').classes([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
-            // layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
+            if (slide_toggle) {
+                try {
+                    slide_toggle = JSON.parse(slide_toggle)
 
-            self.ctx.$scope.changeMade = function (i, event) {
+                    if (slide_toggle.sliderChanged) {
+                        self.ctx.$scope.isSlide_toggleChecked = true
+
+                        $('#slider').css('pointer-events', 'auto')
+                        layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
+                        ctx.detectChanges()
+
+                        console.log('toggle')
+                    }
+                } catch (e) {
+                    console.log('try slide_toggle', e)
+                }
+            } else {
+                const scale = chroma.scale(["#000000", "#FFFFFF"]).domain(s.range)
+                layer.setColor(scale)
+            }
+
+            self.ctx.$scope.changeMode = function (i, event) {
                 if (event.checked) {
                     $('#slider').css('pointer-events', 'auto')
-
                     layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
+                    sessionStorage.setItem('slide_toggle', JSON.stringify({"sliderChanged": "true"}))
                 } else if (!event.checked) {
                     updateGradient()
                     $('#slider').css('pointer-events','none')
+                    sessionStorage.setItem('slide_toggle', JSON.stringify({sliderChanged: false}))
                 }
             }
 
@@ -195,9 +214,6 @@ self.onInit = function () {
 
             low.addEventListener('input', updateGradient)
             high.addEventListener('input', updateGradient)
-
-            const scale = chroma.scale(["#000000", "#FFFFFF"]).domain(s.range)
-            layer.setColor(scale)
 
             layer.on("click", function (e) {
                 if (e.value !== null) {
@@ -225,6 +241,12 @@ self.onInit = function () {
 
         }
     }
+
+    try {
+        exports.Emitter.Emitter.subscribe('updateMap', (data) => {
+            addGeoTiffMaps(data.url)
+        })
+    } catch (e) {}
 
     function onRemovePolygon(polygon, polygonName) {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
@@ -276,7 +298,6 @@ self.onInit = function () {
                     id: asset.id.id,
                     entityType: asset.id.entityType
                 }
-
                 attributeService.saveEntityAttributes(assetForRequest, 'SERVER_SCOPE', attributesArray)
                     .subscribe(attr => {
                         if (e.type === 'pm:update') {
@@ -376,9 +397,6 @@ self.onInit = function () {
     }
 
     setTimeout(function () {
-        // сделать не кликабельным
-        // $('.leaflet-interactive').css({'pointer-events': 'none'})
-
         self.ctx.data.forEach(item => {
             if (item.dataKey.name === 'additionalInfo') {
                 try {
@@ -401,8 +419,6 @@ self.onInit = function () {
             ctx.attributeService.getEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE', ['additionalInfo'])
                 .subscribe(responce => {
                     let dataArray = []
-
-
                     if (responce?.length < 1 || responce[0].value == 'null') {
                         const IUconnects = document.getElementsByClassName("noUi-connects")
                         IUconnects[0].childNodes.forEach((item, index) => {
@@ -428,14 +444,6 @@ self.onInit = function () {
                 })
         })
     }, 1000)
-
-    try {
-        exports.Emitter.Emitter.subscribe('updateMap', (data) => {
-            console.log('event:', data)
-
-
-        })
-    } catch (e) {}
 }
 
 
