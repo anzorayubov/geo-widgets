@@ -1,0 +1,5 @@
+<button
+        *ngFor="let actionDescriptor of ctx.actionsApi.getActionDescriptors('elementClick')"
+        (click)="onButtonClick($event, entity, actionDescriptor)"
+        class="btn">{{actionDescriptor.name}}
+</button>
