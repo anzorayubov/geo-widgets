@@ -11,7 +11,8 @@ self.onInit = function () {
     const attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'));
     const map = L.map("map")
     googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-        maxZoom: 50, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] }).addTo(map)
+        maxZoom: 50, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    }).addTo(map)
 
     self.ctx.$scope.info = []
 
@@ -34,7 +35,6 @@ self.onInit = function () {
         url = url.replace('localhost', window.location.hostname)
         switch (dataType) {
             case 'asc':
-
                 fetch(url)
                     .then(r => r.text())
                     .then(text => {
@@ -83,7 +83,6 @@ self.onInit = function () {
                     s = L.ScalarField.fromASCIIGrid(data);
                 else if (dataType === 'tiff')
                     s = await L.ScalarField.fromGeoTIFF(data)
-
             } catch (err) {
                 //  console.log('error in L.ScalarField.from...()', err)
                 return
@@ -123,8 +122,23 @@ self.onInit = function () {
 
             const minValue = +s.range[0].toFixed(2)
             const maxValue = +s.range[1].toFixed(2)
-            let mid_1 = maxValue * 0.33
-            let mid_2 = maxValue * 0.66
+
+            let mid_1 = 33
+            let mid_2 = 66
+
+            // Создаём пустой массив, который будет одномерным
+            const linearNdvi = []
+            // Переводим двумерный grid в одномерный массив
+            s.grid.forEach(x => {
+                x.forEach(y => linearNdvi.push(y))
+            })
+            // Сортируем новый одномерный массив по возрастанию
+            linearNdvi.sort()
+
+            function getNeededPercentile(percentile = 0.33, linearNdvi) {
+                const indexOfPercentile = parseInt((linearNdvi.length * percentile).toFixed(0))
+                return linearNdvi[indexOfPercentile]
+            }
 
             $('.minValue').text(minValue)
             $('.maxValue').text(maxValue)
@@ -134,41 +148,42 @@ self.onInit = function () {
             if (rulerPercentage) {
                 try {
                     rulerPercentage = JSON.parse(rulerPercentage)
+                    mid_1 = rulerPercentage[1]
+                    mid_2 = rulerPercentage[2]
                 } catch (e) {
-                    console.log('try ruler',e)
+                    console.log('try ruler', e, 'rulerPercentage', rulerPercentage)
                 }
-                mid_1 = maxValue * (rulerPercentage[1]/100)
-                mid_2 = maxValue * (rulerPercentage[2]/100)
             }
 
             const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
             const slider = document.getElementById('slider')
 
             noUiSlider.create(slider, {
-                start: [minValue, mid_1, mid_2, maxValue],
+                start: [0, mid_1, mid_2, 99.999],
                 connect: true,
-                range: {'min': minValue, 'max': maxValue},
+                range: {'min': 0, 'max': 99.999},
                 tooltips: [true, true, true, true],
                 format: {
                     to: function (value) {
-                        return `${(value / (maxValue/100)).toFixed()}% | ${value.toFixed(2)}`
+                        return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
                     },
                     from: function (value) {
                         return +value
                     }
                 }
             })
+
             slider.noUiSlider.on('change.one', function (e) {
                 const percentage = []
                 const values = []
 
                 e.forEach(num => {
-                    values.push(+num.slice(num.indexOf('|')+1, num.length))
+                    values.push(+num.slice(num.indexOf('|') + 1, num.length))
                     percentage.push(parseInt(num.slice(0, num.indexOf('|'))))
-
                     sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
                 })
                 const scale = chroma.scale('OrRd').classes(values)
+                console.log('values', values)
                 layer.setColor(scale)
             })
 
@@ -181,12 +196,14 @@ self.onInit = function () {
             if (slide_toggle) {
                 try {
                     slide_toggle = JSON.parse(slide_toggle)
-
                     if (slide_toggle.sliderChanged) {
                         self.ctx.$scope.isSlide_toggleChecked = true
 
                         $('#slider').css('pointer-events', 'auto')
-                        layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
+
+                        layer.setColor(chroma.scale('OrRd').classes([minValue,
+                            getNeededPercentile(mid_1 / 100, linearNdvi), getNeededPercentile(mid_2 / 100, linearNdvi), maxValue]))
+
                         ctx.detectChanges()
                     }
                 } catch (e) {
@@ -200,11 +217,14 @@ self.onInit = function () {
             self.ctx.$scope.changeMode = function (i, event) {
                 if (event.checked) {
                     $('#slider').css('pointer-events', 'auto')
-                    layer.setColor(chroma.scale('OrRd').classes([minValue, mid_1, mid_2, maxValue]))
-                    sessionStorage.setItem('slide_toggle', JSON.stringify({"sliderChanged": "true"}))
+
+                    layer.setColor(chroma.scale('OrRd').classes([minValue,
+                        getNeededPercentile(mid_1 / 100, linearNdvi), getNeededPercentile(mid_2 / 100, linearNdvi), maxValue]))
+
+                    sessionStorage.setItem('slide_toggle', JSON.stringify({sliderChanged: true}))
                 } else if (!event.checked) {
                     updateGradient()
-                    $('#slider').css('pointer-events','none')
+                    $('#slider').css('pointer-events', 'none')
                     sessionStorage.setItem('slide_toggle', JSON.stringify({sliderChanged: false}))
                 }
             }
@@ -236,9 +256,7 @@ self.onInit = function () {
                         .openOn(map)
                 }
             })
-
             map.fitBounds(layer.getBounds()) // <- куда наводить карту
-
         }
     }
 
@@ -246,7 +264,8 @@ self.onInit = function () {
         exports.Emitter.Emitter.subscribe('updateMap', (data) => {
             addGeoTiffMaps(data.url)
         })
-    } catch (e) {}
+    } catch (e) {
+    }
 
     function onRemovePolygon(polygon, polygonName) {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
@@ -407,17 +426,17 @@ self.onInit = function () {
                         {
                             area: 0,
                             color: '#fff7ec',
-                            value: {fertilizer: '', SZR: '' }
+                            value: {fertilizer: '', SZR: ''}
                         },
                         {
                             area: 0,
                             color: '#fc8d59',
-                            value: {fertilizer: '', SZR: '' }
+                            value: {fertilizer: '', SZR: ''}
                         },
                         {
                             area: 0,
                             color: '#7f0000',
-                            value: {fertilizer: '', SZR: '' }
+                            value: {fertilizer: '', SZR: ''}
                         }
                     ]
                 }
@@ -475,7 +494,6 @@ self.onResize = function () {
 
 self.onDestroy = function () {
 }
-
 
 
 // доки по работе с плагинами
