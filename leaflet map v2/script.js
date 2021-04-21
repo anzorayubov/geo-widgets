@@ -483,6 +483,33 @@ self.onInit = function () {
                 })
         })
     }, 1000)
+
+    exportBtn()
+}
+
+function exportBtn() {
+    $('.export').click(event => {
+        const infoTable = Array.from($('.infoTable'))
+        const array = []
+
+        infoTable.forEach(card => {
+            const matCards = Array.from(card.querySelectorAll('mat-card'))
+
+            matCards.forEach(card => {
+                const cardIndex = card.dataset.index
+                const inputs = Array.from(card.querySelectorAll('input'))
+                const values = {}
+
+                inputs.forEach(input => {
+                    values[input.dataset.type] = input.value
+                })
+                array.push({
+                    cardIndex,
+                    values})
+            })
+        })
+        console.log(array)
+    })
 }
 
 
