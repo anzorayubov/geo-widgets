@@ -4,46 +4,19 @@ self.onInit = function () {
     let $injector = self.ctx.$scope.$injector
     let attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'))
     let snapshots = []
+    $scope.baseUrl = window.location.hostname
 
-    // function getSnapShots() {
-    //     const data = self.ctx.data
-    //     const snapshots = []
-
-    //     data.forEach(key => {
-    //         if (key.dataKey.name === 'snapshots') {
-    //             snapshots.push({
-    //                 date: key.datasource.name,
-    //                 snapshots: JSON.parse(key.data[0][1])
-    //             })
-    //             $scope.snapshots = snapshots //sortByDate(snapshots)
-    //         }
-    //     })
-    //     return snapshots
-    // }
-
+    // вынести это в  функцию // getSnapShots
     data.forEach(key => {
         if (key.dataKey.name === 'snapshots') {
             snapshots.push({
                 date: key.datasource.name,
                 snapshots: JSON.parse(key.data[0][1])
             })
-            $scope.snapshots = snapshots //sortByDate(snapshots)
+
+            $scope.snapshots = sortByDate(snapshots)
         }
     })
-
-    function sortByDate(arr) {
-        arr.sort((a, b) => {
-            if (a.snapshots[0].ts > b.snapshots[0].ts) {
-                return -1
-            }
-            if (a.snapshots[0].ts < b.snapshots[0].ts) {
-                return 1
-            }
-            return 0
-        })
-        return arr
-    }
-
 
     $(document).ready(() => {
         $(".layer").click(function (event) {
@@ -52,6 +25,7 @@ self.onInit = function () {
             const cardTitle = event.currentTarget.querySelector('.mat-card-title').innerText
             let url = ''
 
+            // вынести это в  функцию // getUrl
             snapshots.forEach(obj => {
                 if (obj.date === deviceName) {
                     obj.snapshots.forEach(item => {
@@ -61,6 +35,7 @@ self.onInit = function () {
                 }
             })
 
+            // вынести это в  функцию
             // save to attribute
             ctx.entityRelationService.findByTo({id: id, entityType: 'DEVICE'})
                 .subscribe(response => {
@@ -73,9 +48,7 @@ self.onInit = function () {
 
                             // надо бы обновлять карту без обновления всех виджетов
                             // через emitter
-
                             exports.Emitter.Emitter.emit('updateMap', {url})
-
                             self.ctx.updateAliases()
                         })
                 })
@@ -100,6 +73,19 @@ self.onInit = function () {
         })
 }
 
+function sortByDate(arr) {
+    arr.sort((a, b) => {
+        if (a.snapshots[0].ts > b.snapshots[0].ts) {
+            return -1
+        }
+        if (a.snapshots[0].ts < b.snapshots[0].ts) {
+            return 1
+        }
+        return 0
+    })
+    return arr
+}
+
 self.onDataUpdated = function () {
 }
 
@@ -111,7 +97,6 @@ self.onDestroy = function () {
 
 Emitter = function () {
 };
-
 (function () {
     this.Emitter = {
         listeners: {},
