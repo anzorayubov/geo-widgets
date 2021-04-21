@@ -5,15 +5,45 @@ self.onInit = function () {
     let attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'))
     let snapshots = []
 
+    // function getSnapShots() {
+    //     const data = self.ctx.data
+    //     const snapshots = []
+
+    //     data.forEach(key => {
+    //         if (key.dataKey.name === 'snapshots') {
+    //             snapshots.push({
+    //                 date: key.datasource.name,
+    //                 snapshots: JSON.parse(key.data[0][1])
+    //             })
+    //             $scope.snapshots = snapshots //sortByDate(snapshots)
+    //         }
+    //     })
+    //     return snapshots
+    // }
+
     data.forEach(key => {
         if (key.dataKey.name === 'snapshots') {
             snapshots.push({
                 date: key.datasource.name,
                 snapshots: JSON.parse(key.data[0][1])
             })
-            $scope.snapshots = snapshots
+            $scope.snapshots = snapshots //sortByDate(snapshots)
         }
     })
+
+    function sortByDate(arr) {
+        arr.sort((a, b) => {
+            if (a.snapshots[0].ts > b.snapshots[0].ts) {
+                return -1
+            }
+            if (a.snapshots[0].ts < b.snapshots[0].ts) {
+                return 1
+            }
+            return 0
+        })
+        return arr
+    }
+
 
     $(document).ready(() => {
         $(".layer").click(function (event) {
@@ -40,6 +70,12 @@ self.onInit = function () {
                         id: assetId, entityType: 'ASSET'
                     }, 'SERVER_SCOPE', attribute)
                         .subscribe(attr => {
+
+                            // надо бы обновлять карту без обновления всех виджетов
+                            // через emitter
+
+                            exports.Emitter.Emitter.emit('updateMap', {url})
+
                             self.ctx.updateAliases()
                         })
                 })
@@ -72,3 +108,31 @@ self.onResize = function () {
 
 self.onDestroy = function () {
 }
+
+Emitter = function () {
+};
+
+(function () {
+    this.Emitter = {
+        listeners: {},
+        emit: (event, ...arg) => {
+            if (!Array.isArray(this.Emitter.listeners[event])) {
+                return false
+            }
+            this.Emitter.listeners[event].forEach(listener => {
+                listener(...arg)
+            })
+            return true
+        },
+        subscribe: (event, fn) => {
+            this.Emitter.listeners[event] = this.Emitter.listeners[event] || []
+            this.Emitter.listeners[event].push(fn)
+            return () => {
+                this.Emitter.listeners[event] = this.Emitter.listeners[event].filter(listener => listener !== fn)
+            }
+        }
+    }
+}).call(Emitter);
+
+exports = {}
+exports.Emitter = Emitter;
