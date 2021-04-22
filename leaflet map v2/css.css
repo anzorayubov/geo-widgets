@@ -1,3 +1,19 @@
+.greenBorder {
+    border: 2px solid #3CB371;
+}
+
+.invalidInput {
+    border: 2px solid red;
+}
+
+#savePolygon {
+    transition: background-color 500ms;
+}
+
+.infoTable > button {
+    margin: 4px;
+}
+
 ng-component {
     overflow: auto;
 }
@@ -65,13 +81,11 @@ mat-card-header span {
 
 .images {
     display: flex;
-
 }
 
 .images img {
     width: 100px;
     margin: 0 10px;
-
 }
 
 .images img:hover {
@@ -87,7 +101,6 @@ mat-card-header span {
     z-index: 999;
     border: 1px solid #d0d0d0;
     border-radius: 20px;
-
 }
 
 #map {
@@ -102,6 +115,7 @@ mat-card-header span {
     height: 30px;
     border-radius: 5px;
     transition: background 200ms;
+    /*border: 1px solid #c7c7c78f;*/
 }
 
 .item {
@@ -121,18 +135,19 @@ mat-card-header span {
 .maxValue {
     position: absolute;
     right: -70px;
-    top: 5px;
+    top: 0;
 }
 
 .minValue {
     position: absolute;
     left: -70px;
-    top: 5px;
+    top: 0;
 }
 
 .inputs {
     position: fixed;
-    top: -68px;
+    /*top: -68px;*/
+    top: -90px;
 }
 
 .inputs input {
@@ -140,10 +155,7 @@ mat-card-header span {
 }
 
 mat-slider {
-    width: 50%;
-    position: fixed;
-    top: -82px;
-    left: 163px;
+    width: 100%;
 }
 
 .marker {
@@ -164,8 +176,25 @@ mat-slider {
     position: fixed;
     top: -30px;
     width: 100%;
+    pointer-events: none;
 }
 
-[data-handle="0"], [data-handle="3"] {
+.slider {
+    width: 60%;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    /*top: -82px;*/
+    top: -102px;
+    left: 163px;
+}
+
+.slider mat-slider,
+mat-slide-toggle {
+    margin-left: 10px;
+}
+
+[data-handle="0"],
+[data-handle="3"] {
     display: none;
 }

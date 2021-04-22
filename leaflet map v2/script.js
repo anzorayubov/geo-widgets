@@ -4,6 +4,7 @@
 // https://raw.githubusercontent.com/Allive/geoportal_tiffs/main/geotiff.js - our repo for 0.3.6
 
 const PORT = '3000'
+const BACKEND_PORT = '8081'
 
 self.onInit = function () {
     const $injector = self.ctx.$scope.$injector;
@@ -32,7 +33,8 @@ self.onInit = function () {
     function addGeoTiffMaps(url, polygonsCoordinates) {
         const dataType = url?.includes('.asc') ? 'asc' : 'tiff'
         //ToDo remove replace
-        url = url.replace('localhost', window.location.hostname)
+        url = url.replace('localhost', window.location.hostname).replace(':3000', ':' + BACKEND_PORT)
+
         switch (dataType) {
             case 'asc':
                 fetch(url)
@@ -260,12 +262,12 @@ self.onInit = function () {
         }
     }
 
-    try {
-        exports.Emitter.Emitter.subscribe('updateMap', (data) => {
-            addGeoTiffMaps(data.url)
-        })
-    } catch (e) {
-    }
+    // try {
+    //     exports.Emitter.Emitter.subscribe('updateMap', (data) => {
+    //         addGeoTiffMaps(data.url)
+    //     })
+    // } catch (e) {
+    // }
 
     function onRemovePolygon(polygon, polygonName) {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
@@ -354,40 +356,67 @@ self.onInit = function () {
         return JSON.stringify(coordsArray[0]._latlngs[0])
     }
 
+    const popupStyles = `
+        transition: border 500ms;
+        border-radius: 8px;`
+
+    const btnStyles = `
+        background-color: #4b81e8;
+        color: #fff;
+        border: 1px solid #eee;
+        border-radius: 7px;
+        font-size: 15px;
+        padding: 6px;`
+
+    const errorStyles = `
+        display:none;
+        font-size: 14px;
+        margin: 0; 
+        color: #d62b2b; 
+        text-decoration: underline;
+    `
     map.on('pm:create', polygon => {
-        let asset = {
-            name: `Новый полигон-${Date.now()}`,
-            type: 'geoData'
-        }
-        onUpdatePolygon(polygon, asset.name)
-        onRemovePolygon(polygon, asset.name)
+        const latlngs = [polygon.layer._latlngs[0][0].lat, polygon.layer._latlngs[0][0].lng]
 
-        let attributesArray = [{
-            key: 'polygonsCoordinates',
-            value: getData()
-        }]
-        // сохраняет созданный полигон как актив
-        assetService.saveAsset(asset).subscribe((as) => {
-            attributeService.saveEntityAttributes(as.id, 'SERVER_SCOPE', attributesArray)
-                .subscribe(() => {
-                    $.ajax({
-                        url: `http://${window.location.hostname}:${PORT}/polygons/add`,
-                        method: "POST",
-                        data: {
-                            id: as.id.id,
-                            name: asset.name
-                        }
-                    })
-                })
+        polygon.target.openPopup(`
+            <input style="${popupStyles}" type="text" id="popup"/>
+            <button style="${btnStyles}" disabled id="savePolygon" type="submit">Сохранить</button>
+            <p style="${errorStyles}" id="errorText">Такой полигон уже существует</p>
+        `, latlngs)
+
+        // валидация имени полигона
+        $(document).off()
+        $(document).on('input', '#popup', debounce(event => {
+            const name = event.target.value
+            searchDuplicate(name)
+        }, 1000))
+
+        $('#savePolygon').click(event => {
+            event.target.classList.add('greenBorder')
+            const polygonName = event.target.closest('.leaflet-popup-content').querySelector('input').value
+            const asset = {name: polygonName, type: 'geoData'}
+
+            onUpdatePolygon(polygon, asset.name)
+            onRemovePolygon(polygon, asset.name)
+
+            const attribute = [{
+                key: 'polygonsCoordinates',
+                value: getData()
+            }]
+
+            saveToAttribute(asset, attribute)
+
+            setTimeout(() => {
+                // имитим событие для обновления списка полигонов
+                try {
+                    exports.Emitter.Emitter.emit('updatePolygonsList', asset)
+                } catch (e) {
+                }
+            }, 1000)
+
+            polygon.target.closePopup()
+            // polygon.bindPopup(polygonName)
         })
-
-        setTimeout(() => {
-            // имитим событие для списка полигонов
-            try {
-                exports.Emitter.Emitter.emit('updatePolygonsList', asset)
-            } catch (e) {
-            }
-        }, 1000)
     })
 
     map.on("pm:cut", function (e) {
@@ -485,6 +514,37 @@ self.onInit = function () {
     }, 1000)
 
     exportBtn()
+
+    function saveToAttribute(asset, attribute) {
+        console.log(asset, attribute)
+        assetService.saveAsset(asset).subscribe((as) => {
+            attributeService.saveEntityAttributes(as.id, 'SERVER_SCOPE', attribute)
+                .subscribe(() => {
+                    $.ajax({
+                        url: `http://${window.location.hostname}:${PORT}/polygons/add`,
+                        method: "POST",
+                        data: {
+                            id: as.id.id,
+                            name: asset.name
+                        }
+                    })
+                })
+        })
+    }
+
+    function searchDuplicate(name) {
+        assetService.findByName(name).subscribe(asset => {
+            $('#savePolygon').prop('disabled', true).css('background-color', '#eee')
+            $('#popup').removeClass('greenBorder').addClass('invalidInput')
+            $('#errorText').show(300)
+        }, (err) => {
+            // скрыть вылезающую ошибку
+            $('.cdk-overlay-container').hide()
+            $('#popup').addClass('greenBorder').removeClass('invalidInput')
+            $('#savePolygon').prop('disabled', false).css('background-color', '#4b81e8')
+            $('#errorText').hide(300)
+        })
+    }
 }
 
 function exportBtn() {
@@ -505,11 +565,24 @@ function exportBtn() {
                 })
                 array.push({
                     cardIndex,
-                    values})
+                    values
+                })
             })
         })
         console.log(array)
     })
+}
+
+function debounce(fn, wait) {
+    let timeout
+    return function (...args) {
+        const later = () => {
+            clearTimeout(timeout)
+            fn.apply(this, args)
+        }
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait)
+    }
 }
 
 
@@ -521,7 +594,6 @@ self.onResize = function () {
 
 self.onDestroy = function () {
 }
-
 
 // доки по работе с плагинами
 // https://github.com/stuartmatthews/leaflet-geotiff
