@@ -185,8 +185,11 @@ self.onInit = function () {
                     sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
                 })
                 const scale = chroma.scale('OrRd').classes(values)
-                console.log('values', values)
                 layer.setColor(scale)
+
+                setArea(percentage)
+
+                ctx.detectChanges()
             })
 
             const IUconnects = document.getElementsByClassName("noUi-connects")
@@ -361,7 +364,7 @@ self.onInit = function () {
         border-radius: 8px;`
 
     const btnStyles = `
-        background-color: #4b81e8;
+        background-color: #eee;
         color: #fff;
         border: 1px solid #eee;
         border-radius: 7px;
@@ -387,8 +390,7 @@ self.onInit = function () {
         // валидация имени полигона
         $(document).off()
         $(document).on('input', '#popup', debounce(event => {
-            const name = event.target.value
-            searchDuplicate(name)
+            searchDuplicate(event.target.value)
         }, 1000))
 
         $('#savePolygon').click(event => {
@@ -469,6 +471,25 @@ self.onInit = function () {
                         }
                     ]
                 }
+                self.ctx.detectChanges()
+            }
+
+            if (item.dataKey.name === 'polygonArea') {
+                const area = item.data[0][1]
+                self.ctx.$scope.area = area
+
+                let percentage = sessionStorage.getItem('rulerPercentage')
+                if (percentage) {
+                    try {percentage = JSON.parse(percentage)} catch (e) {}
+
+                    setArea(percentage)
+
+                } else {
+                    self.ctx.$scope.info.forEach((item, index) => {
+                        item.area = (area / 3).toFixed(1)
+                    })
+                }
+
                 self.ctx.detectChanges()
             }
         })
@@ -585,6 +606,12 @@ function debounce(fn, wait) {
     }
 }
 
+function setArea(percentage) {
+    const $scope = self.ctx.$scope
+    $scope.info[0].area = ($scope.area * (percentage[1]-percentage[0])/100).toFixed(1)
+    $scope.info[1].area = ($scope.area * (percentage[2]-percentage[1])/100).toFixed(1)
+    $scope.info[2].area = ($scope.area * (percentage[3]-percentage[2])/100).toFixed(1)
+}
 
 self.onDataUpdated = function () {
 }
