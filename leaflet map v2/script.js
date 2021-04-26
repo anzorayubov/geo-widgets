@@ -24,6 +24,8 @@ self.onInit = function () {
             drawCircle: false,
             drawCircleMarker: false,
             cutPolygon: true,
+            drawPolyline: false,
+            drawMarker: false
         })
         map.pm.setLang('ru')
     } catch (e) {
@@ -99,6 +101,17 @@ self.onInit = function () {
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
                 layer.addTo(map)
+                // выпиливаем ненужные инструменты
+                map.pm.addControls({
+                    position: 'topleft',
+                    drawCircle: false,
+                    drawCircleMarker: false,
+                    cutPolygon: true,
+                    drawPolyline: false,
+                    drawMarker: false,
+                    drawPolygon: false,
+                    drawRectangle: false
+                })
             }
 
             // Dynamic styles
@@ -185,7 +198,10 @@ self.onInit = function () {
                     sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
                 })
                 const scale = chroma.scale('OrRd').classes(values)
+                console.log('percentage', percentage)
                 layer.setColor(scale)
+
+                // сюда надо проценты
 
                 setArea(percentage)
 
@@ -507,7 +523,6 @@ self.onInit = function () {
 
                     let dataArray = []
                     if (responce?.length < 1 || responce[0].value == 'null') {
-                        console.log(responce)
                         const IUconnects = document.getElementsByClassName("noUi-connects")
                         IUconnects[0].childNodes.forEach((item, index) => {
                             dataArray.push({
@@ -522,7 +537,6 @@ self.onInit = function () {
                             [{key: 'additionalInfo', value: dataArray}]).subscribe((answer) => {
                         })
                     } else {
-                        console.log('responce-2', responce)
                         dataArray = self.ctx.$scope.info
                         dataArray[cardIndex].value[inputType] = inputValue
 
@@ -530,6 +544,7 @@ self.onInit = function () {
                             [{key: 'additionalInfo', value: dataArray}]).subscribe(() => {
                         })
                     }
+                    self.ctx.detectChanges()
                 })
         })
     }, 1000)
@@ -571,13 +586,19 @@ self.onInit = function () {
 function exportBtn() {
     $('.export').click(event => {
         const infoTable = Array.from($('.infoTable'))
-        const array = []
 
+        let percentage = sessionStorage.getItem('rulerPercentage')
+        if (percentage) {
+            try {percentage = JSON.parse(percentage)} catch (e) {}
+        } else {
+            percentage = [0, 33, 66, 100]
+        }
+
+        const array = []
         infoTable.forEach(card => {
             const matCards = Array.from(card.querySelectorAll('mat-card'))
 
-            matCards.forEach(card => {
-                const cardIndex = card.dataset.index
+            matCards.forEach((card, index) => {
                 const inputs = Array.from(card.querySelectorAll('input'))
                 const values = {}
 
@@ -585,14 +606,34 @@ function exportBtn() {
                     values[input.dataset.type] = input.value
                 })
                 array.push({
-                    cardIndex,
-                    values
+                    ...values,
+                    percentiles: {
+                        min: percentage[index] || 0,
+                        max: percentage[index+1]
+                    }
                 })
             })
         })
+
+        let tiffId = ''
+        self.ctx.data.forEach(data => {
+            const keyName = data.dataKey.name
+            if (keyName === "tiffMaps" && data.data[0][1] !== '') {
+                const url = JSON.parse(data.data[0][1])[0]
+                tiffId = url.slice( url.lastIndexOf('/')+1, url.length )
+            }
+        })
+
+        // fetch(`http://${window.location.hostname}:${PORT}/api/generateShape/:${tiffId}`, {
+        //   method: 'POST',
+        //   body: array
+        // }).then(response => response.json())
+        //   .then(result => console.log(JSON.stringify(result)))
+
         console.log(array)
     })
 }
+
 
 function debounce(fn, wait) {
     let timeout
