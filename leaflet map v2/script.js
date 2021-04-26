@@ -277,7 +277,19 @@ self.onInit = function () {
                         .openOn(map)
                 }
             })
-            map.fitBounds(layer.getBounds()) // <- куда наводить карту
+
+            const rows = Array.from($('tbody mat-row'))
+            const firstLayer = rows[0]?.firstChild.innerHTML || null
+            const layers = map._layers
+
+            for (let key in layers) {
+                if (layers[key]._popup?._content === firstLayer) {
+                    map.fitBounds(layers[key].getBounds())
+                } else {
+                    map.fitBounds(layer.getBounds())
+                }
+            }
+
         }
     }
 
@@ -581,6 +593,7 @@ self.onInit = function () {
             $('#errorText').hide(300)
         })
     }
+
 }
 
 function exportBtn() {
@@ -603,7 +616,7 @@ function exportBtn() {
                 const values = {}
 
                 inputs.forEach(input => {
-                    values[input.dataset.type] = input.value
+                    values[input.dataset.type] = +input.value
                 })
                 array.push({
                     ...values,
@@ -624,16 +637,15 @@ function exportBtn() {
             }
         })
 
-        // fetch(`http://${window.location.hostname}:${PORT}/api/generateShape/:${tiffId}`, {
-        //   method: 'POST',
-        //   body: array
-        // }).then(response => response.json())
-        //   .then(result => console.log(JSON.stringify(result)))
+        fetch(`http://${window.location.hostname}:${PORT}/api/generateShape/${tiffId}`, {
+            method: 'POST',
+            body: array
+        }).then(response => response.json())
+            .then(result => console.log(JSON.stringify(result)))
 
         console.log(array)
     })
 }
-
 
 function debounce(fn, wait) {
     let timeout
