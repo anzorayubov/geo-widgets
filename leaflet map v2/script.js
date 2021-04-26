@@ -278,18 +278,7 @@ self.onInit = function () {
                 }
             })
 
-            const rows = Array.from($('tbody mat-row'))
-            const firstLayer = rows[0]?.firstChild.innerHTML || null
-            const layers = map._layers
-
-            for (let key in layers) {
-                if (layers[key]._popup?._content === firstLayer) {
-                    map.fitBounds(layers[key].getBounds())
-                } else {
-                    map.fitBounds(layer.getBounds())
-                }
-            }
-
+            hoverToFirstPolygon(layer)
         }
     }
 
@@ -594,7 +583,21 @@ self.onInit = function () {
         })
     }
 
+    function hoverToFirstPolygon(layer) {
+        const rows = Array.from($('tbody mat-row'))
+        const firstLayer = rows[0]?.firstChild.innerHTML || null
+        const layers = map._layers
+
+        for (let key in layers) {
+            if (layers[key]._popup?._content === firstLayer) {
+                map.fitBounds(layers[key].getBounds())
+            } else {
+                map.fitBounds(layer.getBounds())
+            }
+        }
+    }
 }
+
 
 function exportBtn() {
     $('.export').click(event => {
