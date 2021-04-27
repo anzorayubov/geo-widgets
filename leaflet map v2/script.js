@@ -435,6 +435,7 @@ self.onInit = function () {
 
             polygon.target.closePopup()
             // polygon.bindPopup(polygonName)
+
         })
     })
 
@@ -566,62 +567,71 @@ self.onInit = function () {
             attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
                 .subscribe(responce => {
                     //  { nowSnapshot: 0, allSnapshots: 100 }
-                    const progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot || 1
-                    setTimeout(() => {
-                        const rows = Array.from($('tbody mat-row'))
-                        rows.forEach(item => {
-                            if (item.firstChild.innerHTML === asset.name) {
-                                $(item).append(`
-                                    <div id="progressbar">
-                                      <div></div>
-                                    </div>
-                                `)
+                    let progressPercent
 
-                                $('#progressbar').css(progressbarStyles)
-                                $('#progressbar div').css({
-                                    'background-color': 'orange',
-                                    'width': `${progressPercent}%`,
-                                    'height': '3px',
-                                    'border-radius': '10px'})
-                            }
-                        })
-                    }, 3000)
+                    try {
+                        progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot
+                    } catch (e) {
+                        progressPercent = 1
+                    }
+                    const rows = Array.from($('tbody mat-row'))
+
+                    const rowsInterval = setInterval(() => {
+                        if (Array.from($('tbody mat-row')).length != rows.length) {
+                            const rows = Array.from($('tbody mat-row'))
+                            rows.forEach(item => {
+                                if (item.firstChild.innerHTML === asset.name) {
+                                    $(item).append(`
+                                        <div id="progressbar">
+                                          <div></div>
+                                        </div>
+                                    `)
+
+                                    $('#progressbar').css(progressbarStyles)
+                                    $('#progressbar div').css({
+                                        'background-color': 'orange',
+                                        'width': `${progressPercent}%`,
+                                        'height': '3px',
+                                        'border-radius': '10px'})
+                                }
+                            })
+                            clearInterval(rowsInterval)
+                        }
+
+                    }, 1000)
                 })
 
-            progressbarIntervalFunc()
+            const progressbarInterVal = setInterval(() => {
+                attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
+                    .subscribe(responce => {
+                        console.log('responce', JSON.parse(responce[0]?.value))
+                        const progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot || 1
+                        $('#progressbar div').css({
+                            'background-color': 'orange',
+                            'width': `${progressPercent}%`,
+                            'height': '3px',
+                            'border-radius': '10px'})
+                        if (progressPercent == 100) {
+                            $('#progressbar div').css({'background-color': 'green'})
+                            clearInterval(progressbarInterVal)
+                        }
+                    })
+            }, 5000)
 
             attributeService.saveEntityAttributes(as.id, 'SERVER_SCOPE', attribute)
                 .subscribe(() => {
                     // ошибка вылетает...
-                    $.ajax({
-                        url: `http://${window.location.hostname}:${PORT}/polygons/add`,
-                        method: "POST",
-                        data: {
-                            id: as.id.id,
-                            name: asset.name
-                        }
-                    })
+                    // $.ajax({
+                    //     url: `http://${window.location.hostname}:${PORT}/polygons/add`,
+                    //     method: "POST",
+                    //     data: {
+                    //         id: as.id.id,
+                    //         name: asset.name
+                    //     }
+                    // })
                 })
-        })
-    }
 
-    function progressbarIntervalFunc() {
-        const progressbarInterVal = setInterval(() => {
-            attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
-                .subscribe(responce => {
-                    console.log('responce', JSON.parse(responce[0]?.value))
-                    const progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot || 1
-                    $('#progressbar div').css({
-                        'background-color': 'orange',
-                        'width': `${progressPercent}%`,
-                        'height': '3px',
-                        'border-radius': '10px'})
-                    if (progressPercent == 100) {
-                        $('#progressbar div').css({'background-color': 'green'})
-                        clearInterval(progressbarInterVal)
-                    }
-                })
-        }, 5000)
+        })
     }
 
     function searchDuplicate(name) {
