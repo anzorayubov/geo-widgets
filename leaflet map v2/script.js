@@ -552,11 +552,47 @@ self.onInit = function () {
 
     exportBtn()
 
+    const progressbarStyles = {
+        'background-color': 'gray',
+        'border-radius': '13px',
+        'position': 'absolute',
+        'left': '0',
+        'width': '100%',
+        'z-index': '9'
+    }
+
     function saveToAttribute(asset, attribute) {
-        console.log(asset, attribute)
         assetService.saveAsset(asset).subscribe((as) => {
+            attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
+                .subscribe(responce => {
+                    //  { nowSnapshot: 0, allSnapshots: 100 }
+                    const progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot || 1
+                    setTimeout(() => {
+                        const rows = Array.from($('tbody mat-row'))
+                        rows.forEach(item => {
+                            if (item.firstChild.innerHTML === asset.name) {
+                                $(item).append(`
+                                    <div id="progressbar">
+                                      <div></div>
+                                    </div>
+                                `)
+
+                                $('#progressbar').css(progressbarStyles)
+                                $('#progressbar div').css({
+                                    'background-color': 'orange',
+                                    'width': `${progressPercent}%`,
+                                    'height': '3px',
+                                    'border-radius': '10px'})
+                            }
+                        })
+                    }, 3000)
+                })
+
+            progressbarIntervalFunc()
+
             attributeService.saveEntityAttributes(as.id, 'SERVER_SCOPE', attribute)
                 .subscribe(() => {
+                    // ошибка вылетает...
                     $.ajax({
                         url: `http://${window.location.hostname}:${PORT}/polygons/add`,
                         method: "POST",
@@ -567,6 +603,25 @@ self.onInit = function () {
                     })
                 })
         })
+    }
+
+    function progressbarIntervalFunc() {
+        const progressbarInterVal = setInterval(() => {
+            attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
+                .subscribe(responce => {
+                    console.log('responce', JSON.parse(responce[0]?.value))
+                    const progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot || 1
+                    $('#progressbar div').css({
+                        'background-color': 'orange',
+                        'width': `${progressPercent}%`,
+                        'height': '3px',
+                        'border-radius': '10px'})
+                    if (progressPercent == 100) {
+                        $('#progressbar div').css({'background-color': 'green'})
+                        clearInterval(progressbarInterVal)
+                    }
+                })
+        }, 5000)
     }
 
     function searchDuplicate(name) {
