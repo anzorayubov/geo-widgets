@@ -101,6 +101,14 @@ self.onInit = function () {
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
                 layer.addTo(map)
+                if (s.range[1] <= 1) {
+                    setTimeout(function() {
+                        // set color                  black      yellow     green
+                        const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
+                        layer.setColor(scale)
+                    }, 3000)
+                }
+
                 // выпиливаем ненужные инструменты
                 map.pm.addControls({
                     position: 'topleft',
@@ -198,10 +206,9 @@ self.onInit = function () {
                     sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
                 })
                 const scale = chroma.scale('OrRd').classes(values)
-                console.log('percentage', percentage)
                 layer.setColor(scale)
 
-                // сюда надо проценты
+                console.log(values)
 
                 setArea(percentage)
 
@@ -553,6 +560,8 @@ self.onInit = function () {
 
     exportBtn()
 
+    notesBtn()
+
     const progressbarStyles = {
         'background-color': 'gray',
         'border-radius': '13px',
@@ -566,7 +575,7 @@ self.onInit = function () {
         assetService.saveAsset(asset).subscribe((as) => {
             attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
                 .subscribe(responce => {
-                    //  { nowSnapshot: 0, allSnapshots: 100 }
+                    //  {"nowSnapshot":"10","allSnapshots":"100"}
                     let progressPercent
 
                     try {
@@ -591,13 +600,12 @@ self.onInit = function () {
                                     $('#progressbar div').css({
                                         'background-color': 'orange',
                                         'width': `${progressPercent}%`,
-                                        'height': '3px',
+                                        'height': '4px',
                                         'border-radius': '10px'})
                                 }
                             })
                             clearInterval(rowsInterval)
                         }
-
                     }, 1000)
                 })
 
@@ -621,14 +629,14 @@ self.onInit = function () {
             attributeService.saveEntityAttributes(as.id, 'SERVER_SCOPE', attribute)
                 .subscribe(() => {
                     // ошибка вылетает...
-                    // $.ajax({
-                    //     url: `http://${window.location.hostname}:${PORT}/polygons/add`,
-                    //     method: "POST",
-                    //     data: {
-                    //         id: as.id.id,
-                    //         name: asset.name
-                    //     }
-                    // })
+                    $.ajax({
+                        url: `http://${window.location.hostname}:${PORT}/polygons/add`,
+                        method: "POST",
+                        data: {
+                            id: as.id.id,
+                            name: asset.name
+                        }
+                    })
                 })
 
         })
@@ -663,6 +671,21 @@ self.onInit = function () {
     }
 }
 
+function notesBtn() {
+    $('.notes').click(event => {
+        const actionDescriptor = self.ctx.actionsApi.getActionDescriptors('headerButton')[0]
+        const entityDescriptor = {
+            id: self.ctx.currentUser.tenantId,
+            entityType: 'CUSTOMER'
+            //
+        }
+
+        console.log('self.ctx', self.ctx)
+        console.log('entityDescriptor', entityDescriptor)
+
+        self.ctx.actionsApi.handleWidgetAction(event, actionDescriptor, entityDescriptor)
+    })
+}
 
 function exportBtn() {
     $('.export').click(event => {
