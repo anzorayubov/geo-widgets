@@ -208,8 +208,6 @@ self.onInit = function () {
                 const scale = chroma.scale('OrRd').classes(values)
                 layer.setColor(scale)
 
-                console.log(values)
-
                 setArea(percentage)
 
                 ctx.detectChanges()
@@ -254,6 +252,10 @@ self.onInit = function () {
                     updateGradient()
                     $('#slider').css('pointer-events', 'none')
                     sessionStorage.setItem('slide_toggle', JSON.stringify({sliderChanged: false}))
+
+                    // set color                  black      yellow     green
+                    const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
+                    layer.setColor(scale)
                 }
             }
 
@@ -583,6 +585,7 @@ self.onInit = function () {
                     } catch (e) {
                         progressPercent = 1
                     }
+
                     const rows = Array.from($('tbody mat-row'))
 
                     const rowsInterval = setInterval(() => {
@@ -675,13 +678,10 @@ function notesBtn() {
     $('.notes').click(event => {
         const actionDescriptor = self.ctx.actionsApi.getActionDescriptors('headerButton')[0]
         const entityDescriptor = {
-            id: self.ctx.currentUser.tenantId,
-            entityType: 'CUSTOMER'
-            //
+            id: self.ctx.currentUser.customerId,
+            entityType: self.ctx.currentUser.authority.includes('CUSTOMER') ? 'CUSTOMER' :
+                self.ctx.currentUser.authority.includes('TENANT') ? 'TENANT' : self.ctx.currentUser.authority
         }
-
-        console.log('self.ctx', self.ctx)
-        console.log('entityDescriptor', entityDescriptor)
 
         self.ctx.actionsApi.handleWidgetAction(event, actionDescriptor, entityDescriptor)
     })
