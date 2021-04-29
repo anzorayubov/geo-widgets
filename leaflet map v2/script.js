@@ -446,7 +446,6 @@ self.onInit = function () {
 
             polygon.target.closePopup()
             // polygon.bindPopup(polygonName)
-
         })
     })
 
@@ -665,8 +664,16 @@ self.onInit = function () {
             $('#popup').removeClass('greenBorder').addClass('invalidInput')
             $('#errorText').show(300)
         }, (err) => {
-            // скрыть вылезающую ошибку
-            $('.cdk-overlay-container').hide()
+            const int = setInterval(() => {
+                if ($('.cdk-overlay-container')) {
+                    // скрыть вылезающую ошибку
+                    $('.cdk-overlay-container').hide()
+                    clearInterval(int)
+                }
+            }, 50)
+
+            setTimeout(() => { clearInterval(int) }, 3000)
+
             $('#popup').addClass('greenBorder').removeClass('invalidInput')
             $('#savePolygon').prop('disabled', false).css('background-color', '#4b81e8')
             $('#errorText').hide(300)
@@ -686,7 +693,6 @@ self.onInit = function () {
             }
         }
     }
-
 
     function createChart(data) {
         const arrayNums = []
