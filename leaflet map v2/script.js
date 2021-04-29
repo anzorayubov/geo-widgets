@@ -621,15 +621,22 @@ self.onInit = function () {
             const progressbarInterVal = setInterval(() => {
                 attributeService.getEntityAttributes(as.id, 'SERVER_SCOPE', ['loadSnapshotsStatus'])
                     .subscribe(responce => {
-                        console.log('responce', JSON.parse(responce[0]?.value))
-                        const progressPercent = +JSON.parse(responce[0]?.value).nowSnapshot || 1
+                        let value
+
+                        try {
+                            value = +JSON.parse(responce[0]?.value)
+                        } catch (e) {
+                            value = responce[0]?.value
+                        }
+                        console.log('value', value)
+
                         $('#progressbar div').css({
                             'background-color': 'orange',
-                            'width': `${progressPercent}%`,
+                            'width': `${100 / (value.allSnapshots / value.nowSnapshot)}%`,
                             'height': '3px',
                             'border-radius': '10px'
                         })
-                        if (progressPercent == 100) {
+                        if (value.nowSnapshot == value.allSnapshots) {
                             $('#progressbar div').css({'background-color': 'green'})
                             clearInterval(progressbarInterVal)
                         }
@@ -640,7 +647,7 @@ self.onInit = function () {
                 .subscribe(() => {
                     // ошибка вылетает...
                     $.ajax({
-                        url: `http://${window.location.hostname}:${PORT}/polygons/add`,
+                        url: `http://${window.location.hostname}:${BACKEND_PORT}/polygons/add`,
                         method: "POST",
                         data: {
                             id: as.id.id,
