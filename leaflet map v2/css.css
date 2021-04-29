@@ -1,3 +1,10 @@
+.ruler canvas {
+    position: fixed;
+    top: -126px;
+    border: 1px solid #dad7d7;
+    border-radius: 9px;
+}
+
 .container {
     display: flex;
     flex-direction: row !important;
@@ -176,8 +183,7 @@ mat-card-header span {
 
 .inputs {
     position: fixed;
-    /*top: -68px;*/
-    top: -90px;
+    top: -150px;
 }
 
 .inputs input {
@@ -214,8 +220,7 @@ mat-slider {
     position: fixed;
     display: flex;
     align-items: center;
-    /*top: -82px;*/
-    top: -102px;
+    top: -164px;
     left: 163px;
 }
 

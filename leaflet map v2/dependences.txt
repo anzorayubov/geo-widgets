@@ -1,10 +1,8 @@
 https://unpkg.com/leaflet@1.7.1/dist/leaflet.css
 https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js
 //d3js.org/d3.v4.min.js
-https://npmcdn.com/geotiff@0.3.6/dist/geotiff.js
-https://cdn.jsdelivr.net/npm/leaflet-geotiff@0.2.0/leaflet-geotiff.min.js
+https://npmcdn.com/geotiff@1.0.4/dist-browser/geotiff.js
 //cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js
-https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js
-https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css
-https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js
 https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.css
+https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css
+https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js

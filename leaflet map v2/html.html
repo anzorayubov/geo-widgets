@@ -1,5 +1,6 @@
 <div id="map"></div>
 <div class="ruler">
+    <canvas id="bar-chart" width="800" height="40"></canvas>
     <div class="slider">
         <mat-slider (change)="sliderChanged($event)" id="slider_filter" value="1" min="0.00001" max="1.5"
                     step="0.00001"></mat-slider>
@@ -17,8 +18,9 @@
     <span class="minValue"></span>
     <span class="maxValue"></span>
 </div>
-<div id="slider"></div>
 
+
+<div id="slider"></div>
 <div class="infoTable">
     <mat-card data-area='{{item.area}}' class="example-card" *ngFor="let item of info; let ind=index"
               [attr.data-index]="ind">

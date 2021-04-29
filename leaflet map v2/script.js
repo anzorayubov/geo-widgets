@@ -101,11 +101,15 @@ self.onInit = function () {
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
                 layer.addTo(map)
+
                 if (s.range[1] <= 1) {
-                    setTimeout(function() {
-                        // set color                  black      yellow     green
-                        const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
-                        layer.setColor(scale)
+                    setTimeout(function () {
+                        let slide_toggle = sessionStorage.getItem('slide_toggle')
+                        if (!slide_toggle) {
+                            // set color                  black      yellow     green
+                            const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
+                            layer.setColor(scale)
+                        }
                     }, 3000)
                 }
 
@@ -132,9 +136,6 @@ self.onInit = function () {
             }
 
             /* dynamic filtering */
-            // ToDo возможно можно сократить зависание отфильтровав точки.
-            // думаю в изображениях много точек
-
             self.ctx.$scope.sliderChanged = function (e) {
                 let h = e.value
                 let f = function (v) {
@@ -149,13 +150,10 @@ self.onInit = function () {
             let mid_1 = 33
             let mid_2 = 66
 
-            // Создаём пустой массив, который будет одномерным
             const linearNdvi = []
-            // Переводим двумерный grid в одномерный массив
             s.grid.forEach(x => {
                 x.forEach(y => linearNdvi.push(y))
             })
-            // Сортируем новый одномерный массив по возрастанию
             linearNdvi.sort()
 
             function getNeededPercentile(percentile = 0.33, linearNdvi) {
@@ -251,11 +249,13 @@ self.onInit = function () {
                 } else if (!event.checked) {
                     updateGradient()
                     $('#slider').css('pointer-events', 'none')
-                    sessionStorage.setItem('slide_toggle', JSON.stringify({sliderChanged: false}))
+                    sessionStorage.removeItem('slide_toggle')
 
-                    // set color                  black      yellow     green
-                    const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
-                    layer.setColor(scale)
+                    if (s.range[1] <= 1) {
+                        // set color                  black      yellow     green
+                        const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
+                        layer.setColor(scale)
+                    }
                 }
             }
 
@@ -288,6 +288,8 @@ self.onInit = function () {
             })
 
             hoverToFirstPolygon(layer)
+
+            createChart(linearNdvi)
         }
     }
 
@@ -507,7 +509,10 @@ self.onInit = function () {
 
                 let percentage = sessionStorage.getItem('rulerPercentage')
                 if (percentage) {
-                    try {percentage = JSON.parse(percentage)} catch (e) {}
+                    try {
+                        percentage = JSON.parse(percentage)
+                    } catch (e) {
+                    }
 
                     setArea(percentage)
 
@@ -604,7 +609,8 @@ self.onInit = function () {
                                         'background-color': 'orange',
                                         'width': `${progressPercent}%`,
                                         'height': '4px',
-                                        'border-radius': '10px'})
+                                        'border-radius': '10px'
+                                    })
                                 }
                             })
                             clearInterval(rowsInterval)
@@ -621,7 +627,8 @@ self.onInit = function () {
                             'background-color': 'orange',
                             'width': `${progressPercent}%`,
                             'height': '3px',
-                            'border-radius': '10px'})
+                            'border-radius': '10px'
+                        })
                         if (progressPercent == 100) {
                             $('#progressbar div').css({'background-color': 'green'})
                             clearInterval(progressbarInterVal)
@@ -672,6 +679,55 @@ self.onInit = function () {
             }
         }
     }
+
+
+    function createChart(data) {
+        const arrayNums = []
+        const colums = 20
+        let previousVal = data[0]
+
+        for (let i = 1; i < colums; i++) {
+            const breakPointNumber = data[(data.length / 20) * i]
+            let count = 0
+            data.forEach(num => {
+                if (num < 0) {
+                    if (num >= breakPointNumber && num < previousVal) {
+                        count++
+                        previousVal = num
+                    }
+                }
+                if (num <= breakPointNumber && num > previousVal) {
+                    count++
+                    previousVal = num
+                }
+            })
+            arrayNums.push(count)
+        }
+
+        new Chart(document.getElementById("bar-chart"), {
+            type: 'bar',
+            data: {
+                labels: arrayNums,
+                datasets: [
+                    {
+                        backgroundColor: ["#3e95cd"],
+                        data: arrayNums,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {display: false},
+                    title: {display: false},
+                },
+                scales: {
+                    x: {display: false},
+                    y: {display: false}
+                }
+            },
+        })
+    }
 }
 
 function notesBtn() {
@@ -693,7 +749,10 @@ function exportBtn() {
 
         let percentage = sessionStorage.getItem('rulerPercentage')
         if (percentage) {
-            try {percentage = JSON.parse(percentage)} catch (e) {}
+            try {
+                percentage = JSON.parse(percentage)
+            } catch (e) {
+            }
         } else {
             percentage = [0, 33, 66, 100]
         }
@@ -713,7 +772,7 @@ function exportBtn() {
                     ...values,
                     percentiles: {
                         min: percentage[index] || 0,
-                        max: percentage[index+1]
+                        max: percentage[index + 1]
                     }
                 })
             })
@@ -724,7 +783,7 @@ function exportBtn() {
             const keyName = data.dataKey.name
             if (keyName === "tiffMaps" && data.data[0][1] !== '') {
                 const url = JSON.parse(data.data[0][1])[0]
-                tiffId = url.slice( url.lastIndexOf('/')+1, url.length )
+                tiffId = url.slice(url.lastIndexOf('/') + 1, url.length)
             }
         })
 
@@ -752,9 +811,9 @@ function debounce(fn, wait) {
 
 function setArea(percentage) {
     const $scope = self.ctx.$scope
-    $scope.info[0].area = ($scope.area * (percentage[1]-percentage[0])/100).toFixed(1)
-    $scope.info[1].area = ($scope.area * (percentage[2]-percentage[1])/100).toFixed(1)
-    $scope.info[2].area = ($scope.area * (percentage[3]-percentage[2])/100).toFixed(1)
+    $scope.info[0].area = ($scope.area * (percentage[1] - percentage[0]) / 100).toFixed(1)
+    $scope.info[1].area = ($scope.area * (percentage[2] - percentage[1]) / 100).toFixed(1)
+    $scope.info[2].area = ($scope.area * (percentage[3] - percentage[2]) / 100).toFixed(1)
 }
 
 self.onDataUpdated = function () {
