@@ -3,8 +3,9 @@ self.onInit = function () {
     let $scope = self.ctx.$scope
     let $injector = self.ctx.$scope.$injector
     let attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'))
-    let snapshots = []
     $scope.baseUrl = window.location.hostname
+    $scope.BACKEND_PORT = '8081'
+    let snapshots = []
 
     // вынести это в  функцию // getSnapShots
     data.forEach(key => {
@@ -13,7 +14,6 @@ self.onInit = function () {
                 date: key.datasource.name,
                 snapshots: JSON.parse(key.data[0][1])
             })
-
             $scope.snapshots = sortByDate(snapshots)
         }
     })
@@ -35,7 +35,6 @@ self.onInit = function () {
                 }
             })
 
-            // вынести это в  функцию
             // save to attribute
             ctx.entityRelationService.findByTo({id: id, entityType: 'DEVICE'})
                 .subscribe(response => {
@@ -56,7 +55,6 @@ self.onInit = function () {
     })
 
     // mark Active Card
-
     const id = self.ctx.data[0].datasource.entityFilter?.rootEntity.id
 
     attributeService.getEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE', ['tiffMaps'])
@@ -71,7 +69,25 @@ self.onInit = function () {
                 })
             })
         })
+
+    infoBtn()
+
+    function infoBtn() {
+        $('.optionally_info_btn').click(() => {
+            $('.modal').toggleClass('move')
+            $('.container mat-card').toggleClass('blur')
+        })
+
+        // работа с активом
+        const id = self.ctx.data[0].datasource.entityId
+        const dataArray = []
+
+        attributeService.saveEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE',
+            [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
+        })
+    }
 }
+
 
 function sortByDate(arr) {
     arr.sort((a, b) => {
