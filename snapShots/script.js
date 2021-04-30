@@ -69,37 +69,6 @@ self.onInit = function () {
                 })
             })
         })
-
-    infoBtn()
-
-    function infoBtn() {
-        $('.optionally_info_btn').click(() => {
-            $('.modal').toggleClass('move')
-            $('.container mat-card').toggleClass('blur')
-        })
-
-
-        $('.submit').click(() => {
-            const id = self.ctx.data[0].datasource.entityId
-            const type = self.ctx.data[0].datasource.entityType
-            const dataArray = []
-            const inputs = Array.from($('.modal input'))
-            const textArea = $('.modal textarea').val()
-            // console.log(self.ctx.data[0].datasource)
-
-            inputs.forEach(input => {
-                dataArray.push(input.value)
-
-            })
-            console.log(dataArray, textArea)
-
-            // attributeService.saveEntityAttributes({id: id, entityType: type}, 'SERVER_SCOPE',
-            //     [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
-
-            //     })
-        })
-
-    }
 }
 
 

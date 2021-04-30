@@ -525,7 +525,7 @@ self.onInit = function () {
             }
         })
         // тут логика при редактировании инпутов
-        $('.infoTable input').change((event) => {
+        $('.infoTable mat-card input').change((event) => {
             const cardIndex = event.target.closest('mat-card').dataset.index
             const inputValue = event.target.value
             const inputType = event.target.dataset.type
@@ -567,6 +567,8 @@ self.onInit = function () {
     exportBtn()
 
     notesBtn()
+
+    infoBtn()
 
     const progressbarStyles = {
         'background-color': 'gray',
@@ -740,6 +742,34 @@ self.onInit = function () {
                 }
             },
         })
+    }
+
+    function infoBtn() {
+        $('.optionally_info_btn').click(() => {
+            $('.modal').toggleClass('move')
+            $('.infoTable mat-card').toggleClass('blur')
+        })
+
+        $('.submit').click(() => {
+            const id = self.ctx.data[0].datasource.entityId
+            const type = self.ctx.data[0].datasource.entityType
+            const dataArray = []
+            const inputs = Array.from($('.modal input'))
+            const textArea = $('.modal textarea').val()
+            // console.log(self.ctx.data[0].datasource)
+
+            inputs.forEach(input => {
+                dataArray.push(input.value)
+
+            })
+            console.log(dataArray, textArea)
+
+            // attributeService.saveEntityAttributes({id: id, entityType: type}, 'SERVER_SCOPE',
+            //     [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
+
+            //     })
+        })
+
     }
 }
 
