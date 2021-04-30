@@ -78,13 +78,27 @@ self.onInit = function () {
             $('.container mat-card').toggleClass('blur')
         })
 
-        // работа с активом
-        const id = self.ctx.data[0].datasource.entityId
-        const dataArray = []
 
-        attributeService.saveEntityAttributes({id: id, entityType: 'ASSET'}, 'SERVER_SCOPE',
-            [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
+        $('.submit').click(() => {
+            const id = self.ctx.data[0].datasource.entityId
+            const type = self.ctx.data[0].datasource.entityType
+            const dataArray = []
+            const inputs = Array.from($('.modal input'))
+            const textArea = $('.modal textarea').val()
+            // console.log(self.ctx.data[0].datasource)
+
+            inputs.forEach(input => {
+                dataArray.push(input.value)
+
+            })
+            console.log(dataArray, textArea)
+
+            // attributeService.saveEntityAttributes({id: id, entityType: type}, 'SERVER_SCOPE',
+            //     [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
+
+            //     })
         })
+
     }
 }
 
