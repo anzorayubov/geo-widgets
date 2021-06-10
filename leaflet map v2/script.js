@@ -53,7 +53,7 @@ self.onInit = function () {
                         try {
                             await drawLayer(buffer, dataType, polygonsCoordinates)
                         } catch (e) {
-                            // console.log('drawLayer()', e)
+                            console.log('drawLayer()', e)
                         }
                     })
                 break
@@ -88,7 +88,7 @@ self.onInit = function () {
                 else if (dataType === 'tiff')
                     s = await L.ScalarField.fromGeoTIFF(data)
             } catch (err) {
-                //  console.log('error in L.ScalarField.from...()', err)
+                 console.log('error in L.ScalarField.from...()', err)
                 return
             }
 
@@ -473,7 +473,8 @@ self.onInit = function () {
             }
         })
     }
-
+    let infoFromModalArray
+    
     setTimeout(function () {
         self.ctx.data.forEach(item => {
             if (item.dataKey.name === 'additionalInfo') {
@@ -497,6 +498,18 @@ self.onInit = function () {
                             color: '#7f0000',
                             value: {fertilizer: '', SZR: ''}
                         }
+                    ]
+                }
+                self.ctx.detectChanges()
+            } else if (item.dataKey.name === 'infoFromModal') {
+                try {
+                    const data = JSON.parse(item.data[0][1])
+                    self.ctx.$scope.infoFromModal = data
+                } catch (e) {
+                    self.ctx.$scope.infoFromModal = [
+                        { title: 'инфо_1', value: '' },
+                        { title: 'инфо_2', value: '' },
+                        { title: 'инфо_3', value: '' },
                     ]
                 }
                 self.ctx.detectChanges()
@@ -530,8 +543,6 @@ self.onInit = function () {
             const inputValue = event.target.value
             const inputType = event.target.dataset.type
             
-            console.log('inputType',inputType, inputValue)
-            
             // работа с активом
             let id = self.ctx.data[0].datasource.entityId
 
@@ -561,12 +572,26 @@ self.onInit = function () {
                             [{key: 'additionalInfo', value: dataArray}]).subscribe(() => {
                         })
                     }
-                    console.log('dataArray', dataArray)
                     
                     self.ctx.detectChanges()
                 })
         })
-    }, 1000)
+        
+        $('.modal input').change((event) => {
+            const inputs = Array.from($('.modal input'))
+            const dataArray = []
+            
+            inputs.forEach(input => {
+                const title = input.closest('div').querySelector('mat-label').innerHTML
+                dataArray.push({
+                    title: title,
+                    value: input.value
+                })
+            })
+            infoFromModalArray = dataArray
+        })
+        
+    }, 2000)
 
     exportBtn()
 
@@ -633,7 +658,6 @@ self.onInit = function () {
                         } catch (e) {
                             value = responce[0]?.value
                         }
-                        // console.log('value', value)
 
                         $('#progressbar div').css({
                             'background-color': 'orange',
@@ -753,25 +777,14 @@ self.onInit = function () {
             $('.modal').toggleClass('move')
             $('.infoTable mat-card').toggleClass('blur')
         })
-
+        
         $('.submit').click(() => {
+            const textArea = $('.modal textarea').val()
             const id = self.ctx.data[0].datasource.entityId
             const type = self.ctx.data[0].datasource.entityType
-            const dataArray = []
-            const inputs = Array.from($('.modal input'))
-            const textArea = $('.modal textarea').val()
-            // console.log(self.ctx.data[0].datasource)
             
-            inputs.forEach(input => {
-                dataArray.push(input.value)
-                
-            })
-            // console.log(dataArray, textArea)
-            
-            // attributeService.saveEntityAttributes({id: id, entityType: type}, 'SERVER_SCOPE',
-            //     [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
-                
-            //     })
+            attributeService.saveEntityAttributes({id: id, entityType: type}, 'SERVER_SCOPE',
+                [{key: 'infoFromModal', value: infoFromModalArray}]).subscribe(() => {})
         })
         
     }
@@ -839,8 +852,6 @@ function exportBtn() {
             body: array
         }).then(response => response.json())
             .then(result => console.log(JSON.stringify(result)))
-
-        // console.log(array)
     })
 }
 

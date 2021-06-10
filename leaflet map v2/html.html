@@ -43,7 +43,6 @@
                 <span>Масса СЗР:<span>{{ (item.value.PPP * item.area).toFixed() }}</span>кг</span>
             </div>
         </div>
-
     </mat-card>
     <button class="export" mat-raised-button color="primary">Экспортировать</button>
     <button class="notes" mat-raised-button color="primary">Записи</button>
@@ -52,24 +51,12 @@
     
     <div class="modal">
         <div class="inputs_2">
-            <mat-form-field class="example-full-width">
-                <mat-label>инфра 1</mat-label>
-                <input autocomplete="off" matInput value="" data-type='fertilizer'>
-            </mat-form-field>
-            <mat-form-field class="example-full-width">
-                <mat-label>инфра 2</mat-label>
-                <input autocomplete="off" matInput value="" data-type='PPP'>
-            </mat-form-field>
-            <mat-form-field class="example-full-width">
-                <mat-label>инфра 3</mat-label>
-                <input autocomplete="off" matInput value="" data-type='fertilizer'>
-            </mat-form-field>
-            <mat-form-field class="example-full-width">
-                <mat-label>инфра 4</mat-label>
-                <input autocomplete="off" matInput value="" data-type='PPP'>
+            <mat-form-field class="example-full-width" *ngFor="let item of infoFromModal; let ind=index">
+                <mat-label>{{item.title}}</mat-label>
+                <input autocomplete="off" matInput value="{{item.value}}" data-type='info'>
             </mat-form-field>
         </div>
-        <textarea placeholder="комментарии"></textarea>
+        <textarea placeholder="Комментарии"></textarea>
         <button class="submit" mat-raised-button color="primary">Сохранить</button>
     </div>
 </div>

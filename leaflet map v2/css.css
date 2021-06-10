@@ -57,7 +57,6 @@ mat-form-field {
     border: 1px solid #dad7d7;
     border-radius: 9px;
 }
-
 .container {
     display: flex;
     flex-direction: row !important;
@@ -80,6 +79,7 @@ mat-form-field {
 
 .container .text span span {
     color: black;
+    margin-left: 2px;
 }
 
 .fields {
