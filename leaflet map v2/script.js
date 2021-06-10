@@ -97,6 +97,8 @@ self.onInit = function () {
             layer = L.canvasLayer.scalarField(s, {
                 opacity: 0.8
             })
+            
+            console.log('L', L)
 
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
@@ -293,12 +295,25 @@ self.onInit = function () {
         }
     }
 
-    // try {
-    //     exports.Emitter.Emitter.subscribe('updateMap', (data) => {
-    //         addGeoTiffMaps(data.url)
-    //     })
-    // } catch (e) {
-    // }
+    try {
+        exports.Emitter.Emitter.subscribe('updateMap', (url) => {
+            // перебрать data и найти  polygonsCoordinates конкретного url 
+            // и передать его в addGeoTiffMaps
+        
+            // self.ctx.data.forEach(data => {
+            //     const keyName = data.dataKey.name
+            //     const polygonName = data.datasource.name
+    
+            //     if (keyName === "polygonsCoordinates") {
+            //         const polygonsCoordinates = JSON.parse(data.data[0][1])
+                    
+            //         console.log(url.url, polygonsCoordinates)
+                    
+            //         addGeoTiffMaps(url.url, polygonsCoordinates)
+            //     }
+            // }) 
+        })
+    } catch (e) {}
 
     function onRemovePolygon(polygon, polygonName) {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
@@ -449,8 +464,7 @@ self.onInit = function () {
         })
     })
 
-    map.on("pm:cut", function (e) {
-    })
+    map.on("pm:cut", function (e) {})
 
     let polygonsCoordinates;
 
@@ -473,6 +487,7 @@ self.onInit = function () {
             }
         })
     }
+    
     let infoFromModalArray
     
     setTimeout(function () {
