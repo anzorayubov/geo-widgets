@@ -529,7 +529,9 @@ self.onInit = function () {
             const cardIndex = event.target.closest('mat-card').dataset.index
             const inputValue = event.target.value
             const inputType = event.target.dataset.type
-
+            
+            console.log('inputType',inputType, inputValue)
+            
             // работа с активом
             let id = self.ctx.data[0].datasource.entityId
 
@@ -559,6 +561,8 @@ self.onInit = function () {
                             [{key: 'additionalInfo', value: dataArray}]).subscribe(() => {
                         })
                     }
+                    console.log('dataArray', dataArray)
+                    
                     self.ctx.detectChanges()
                 })
         })
@@ -569,7 +573,7 @@ self.onInit = function () {
     notesBtn()
 
     infoBtn()
-
+    
     const progressbarStyles = {
         'background-color': 'gray',
         'border-radius': '13px',
@@ -629,7 +633,7 @@ self.onInit = function () {
                         } catch (e) {
                             value = responce[0]?.value
                         }
-                        console.log('value', value)
+                        // console.log('value', value)
 
                         $('#progressbar div').css({
                             'background-color': 'orange',
@@ -673,9 +677,9 @@ self.onInit = function () {
                     clearInterval(int)
                 }
             }, 50)
-
+            
             setTimeout(() => { clearInterval(int) }, 3000)
-
+            
             $('#popup').addClass('greenBorder').removeClass('invalidInput')
             $('#savePolygon').prop('disabled', false).css('background-color', '#4b81e8')
             $('#errorText').hide(300)
@@ -757,19 +761,19 @@ self.onInit = function () {
             const inputs = Array.from($('.modal input'))
             const textArea = $('.modal textarea').val()
             // console.log(self.ctx.data[0].datasource)
-
+            
             inputs.forEach(input => {
                 dataArray.push(input.value)
-
+                
             })
-            console.log(dataArray, textArea)
-
+            // console.log(dataArray, textArea)
+            
             // attributeService.saveEntityAttributes({id: id, entityType: type}, 'SERVER_SCOPE',
             //     [{key: 'optionalInfo', value: dataArray}]).subscribe(() => {
-
+                
             //     })
         })
-
+        
     }
 }
 
@@ -836,7 +840,7 @@ function exportBtn() {
         }).then(response => response.json())
             .then(result => console.log(JSON.stringify(result)))
 
-        console.log(array)
+        // console.log(array)
     })
 }
 
