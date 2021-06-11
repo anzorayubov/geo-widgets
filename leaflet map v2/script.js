@@ -31,7 +31,7 @@ self.onInit = function () {
     } catch (e) {
         console.log('TOOLBAR', e)
     }
-
+    
     function addGeoTiffMaps(url, polygonsCoordinates) {
         const dataType = url?.includes('.asc') ? 'asc' : 'tiff'
         //ToDo remove replace
@@ -59,7 +59,7 @@ self.onInit = function () {
                 break
         }
 
-        async function drawLayer(data, dataType) {            
+        async function drawLayer(data, dataType) {
             let maskPolygonCoordinates = [];
             polygonsCoordinates.forEach((element) => {
                 if (element.length) {
@@ -70,7 +70,7 @@ self.onInit = function () {
                     maskPolygonCoordinates.push([element.lng, element.lat])
                 }
             })
-
+            
             const mask = {
                 "type": "Feature",
                 "properties": {},
@@ -100,22 +100,17 @@ self.onInit = function () {
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
                 const layers = map._layers
-                const layersArray = []
                 
-                for(let l in layers) {
-                    layersArray.push(layers[l])
-                }
-                const lastLayer = layersArray[layersArray.length-1]
-                
-                if (lastLayer.options.color) {
-                    lastLayer.remove()
-                }
+                map.eachLayer(function(layer){
+                    if (layer.options.opacity < 1) {
+                        layer.remove()
+                    }  
+                })
                 
                 setTimeout(() => {
                     layer.addTo(map)
-                }, 2000)
+                }, 1000)
                 
-
                 if (s.range[1] <= 1) {
                     setTimeout(function () {
                         let slide_toggle = sessionStorage.getItem('slide_toggle')
@@ -124,7 +119,7 @@ self.onInit = function () {
                             const scale = chroma.scale(['#000000', '#cec023', '#1adc43']).domain([0.00000001, 0.1, 1])
                             layer.setColor(scale)
                         }
-                    }, 3000)
+                    }, 2000)
                 }
 
                 // выпиливаем ненужные инструменты
@@ -319,13 +314,11 @@ self.onInit = function () {
                 }
             })
 
-            hoverToFirstPolygon(layer)
+            // hoverToFirstPolygon(layer)
+             map.fitBounds(layer.getBounds(), {animate: false})
             
-            console.log('map', map)
         }
     }
-
-    
 
     function onRemovePolygon(polygon, polygonName) {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
@@ -816,7 +809,7 @@ self.onInit = function () {
                 const keyName = data.dataKey.name
     
                 if (keyName === "polygonsCoordinates") {
-                    const polygonsCoordinates = JSON.parse(data.data[0][1])    
+                    const polygonsCoordinates = JSON.parse(data.data[0][1])
                     addGeoTiffMaps(url.url, polygonsCoordinates)
                 }
             }) 
