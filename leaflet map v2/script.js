@@ -59,8 +59,7 @@ self.onInit = function () {
                 break
         }
 
-        async function drawLayer(data, dataType) {
-
+        async function drawLayer(data, dataType) {            
             let maskPolygonCoordinates = [];
             polygonsCoordinates.forEach((element) => {
                 if (element.length) {
@@ -97,12 +96,25 @@ self.onInit = function () {
             layer = L.canvasLayer.scalarField(s, {
                 opacity: 0.8
             })
-            
-            console.log('L', L)
 
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
-                layer.addTo(map)
+                const layers = map._layers
+                const layersArray = []
+                
+                for(let l in layers) {
+                    layersArray.push(layers[l])
+                }
+                const lastLayer = layersArray[layersArray.length-1]
+                
+                if (lastLayer.options.color) {
+                    lastLayer.remove()
+                }
+                
+                setTimeout(() => {
+                    layer.addTo(map)
+                }, 2000)
+                
 
                 if (s.range[1] <= 1) {
                     setTimeout(function () {
@@ -157,7 +169,9 @@ self.onInit = function () {
                 x.forEach(y => linearNdvi.push(y))
             })
             linearNdvi.sort()
-
+            
+            createChart(linearNdvi)
+            
             function getNeededPercentile(percentile = 0.33, linearNdvi) {
                 const indexOfPercentile = parseInt((linearNdvi.length * percentile).toFixed(0))
                 return linearNdvi[indexOfPercentile]
@@ -180,21 +194,40 @@ self.onInit = function () {
 
             const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
             const slider = document.getElementById('slider')
-
-            noUiSlider.create(slider, {
-                start: [0, mid_1, mid_2, 99.999],
-                connect: true,
-                range: {'min': 0, 'max': 99.999},
-                tooltips: [true, true, true, true],
-                format: {
-                    to: function (value) {
-                        return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
-                    },
-                    from: function (value) {
-                        return +value
+                
+            function sliderInit() {
+                noUiSlider.create(slider, {
+                    start: [0, mid_1, mid_2, 99.999],
+                    connect: true,
+                    range: {'min': 0, 'max': 99.999},
+                    tooltips: [true, true, true, true],
+                    format: {
+                        to: function (value) {
+                            return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
+                        },
+                        from: function (value) {
+                            return +value
+                        }
                     }
-                }
-            })
+                })
+            }
+            
+            try {
+                sliderInit()
+                
+            } catch (e) {
+                slider.noUiSlider.updateOptions({
+                    start: [0, mid_1, mid_2, 99.999],
+                    format: {
+                        to: function (value) {
+                            return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
+                        },
+                        from: function (value) {
+                            return +value
+                        }
+                    }
+                })
+            }
 
             slider.noUiSlider.on('change.one', function (e) {
                 const percentage = []
@@ -261,9 +294,6 @@ self.onInit = function () {
                 }
             }
 
-            // Todo
-            // отключить автоматичекое перерисовывание!! в нужный момент вызывать layer.needRedraw()
-
             low.addEventListener('input', updateGradient)
             high.addEventListener('input', updateGradient)
 
@@ -290,30 +320,12 @@ self.onInit = function () {
             })
 
             hoverToFirstPolygon(layer)
-
-            createChart(linearNdvi)
+            
+            console.log('map', map)
         }
     }
 
-    try {
-        exports.Emitter.Emitter.subscribe('updateMap', (url) => {
-            // перебрать data и найти  polygonsCoordinates конкретного url 
-            // и передать его в addGeoTiffMaps
-        
-            // self.ctx.data.forEach(data => {
-            //     const keyName = data.dataKey.name
-            //     const polygonName = data.datasource.name
     
-            //     if (keyName === "polygonsCoordinates") {
-            //         const polygonsCoordinates = JSON.parse(data.data[0][1])
-                    
-            //         console.log(url.url, polygonsCoordinates)
-                    
-            //         addGeoTiffMaps(url.url, polygonsCoordinates)
-            //     }
-            // }) 
-        })
-    } catch (e) {}
 
     function onRemovePolygon(polygon, polygonName) {
         polygon = typeof polygon.on == 'function' ? polygon : polygon.layer
@@ -738,7 +750,9 @@ self.onInit = function () {
             }
         }
     }
-
+    
+    let myBar
+    
     function createChart(data) {
         const arrayNums = []
         const colums = 20
@@ -761,31 +775,54 @@ self.onInit = function () {
             })
             arrayNums.push(count)
         }
-
-        new Chart(document.getElementById("bar-chart"), {
-            type: 'bar',
-            data: {
-                labels: arrayNums,
-                datasets: [
-                    {
-                        backgroundColor: ["#3e95cd"],
-                        data: arrayNums,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {display: false},
-                    title: {display: false},
+        
+        try {
+            myBar = new Chart(document.getElementById("bar-chart"), {
+                type: 'bar',
+                data: {
+                    labels: arrayNums,
+                    datasets: [
+                        {
+                            backgroundColor: ["#3e95cd"],
+                            data: arrayNums,
+                        }
+                    ]
                 },
-                scales: {
-                    x: {display: false},
-                    y: {display: false}
-                }
-            },
-        })
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {display: false},
+                        title: {display: false},
+                    },
+                    scales: {
+                        x: {display: false},
+                        y: {display: false}
+                    }
+                },
+            })
+        } catch (e) {
+                myBar.config._config.data.datasets[0].data = arrayNums
+                myBar.config._config.data.labels = arrayNums
+                myBar.update()
+        }
     }
+    
+    try {
+        exports.Emitter.Emitter.subscribe('updateMap', (url) => {
+            $('.layers').removeClass('active')
+            $(this).addClass('active')
+
+            self.ctx.data.forEach(data => {
+                const keyName = data.dataKey.name
+    
+                if (keyName === "polygonsCoordinates") {
+                    const polygonsCoordinates = JSON.parse(data.data[0][1])    
+                    addGeoTiffMaps(url.url, polygonsCoordinates)
+                }
+            }) 
+        })
+    } catch (e) {}
+    
 
     function infoBtn() {
         $('.optionally_info_btn').click(() => {
