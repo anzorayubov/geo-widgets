@@ -1,5 +1,9 @@
 <button
-        *ngFor="let actionDescriptor of ctx.actionsApi.getActionDescriptors('elementClick')"
-        (click)="onButtonClick($event, entity, actionDescriptor)"
-        class="btn">{{actionDescriptor.name}}
+    *ngFor="let actionDescriptor of ctx.actionsApi.getActionDescriptors('elementClick')"
+    (click)="onButtonClick($event, entity, actionDescriptor)"
+    mat-raised-button color="primary"
+    class="btn">{{actionDescriptor.name}}
+   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="23" viewBox="0 0 32 23" fill="none">
+    <path d="M10.273 1.00903C10.717 0.565025 11.416 0.565025 11.86 1.00903C12.289 1.43803 12.289 2.15203 11.86 2.58003L3.81302 10.627H30.367C30.986 10.627 31.494 11.119 31.494 11.738C31.494 12.357 30.986 12.865 30.367 12.865H3.81302L11.86 20.897C12.289 21.341 12.289 22.056 11.86 22.484C11.416 22.928 10.717 22.928 10.273 22.484L0.321018 12.532C-0.107982 12.103 -0.107982 11.389 0.321018 10.961L10.273 1.00903Z" fill="white"/>
+    </svg>
 </button>
