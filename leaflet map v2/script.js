@@ -99,8 +99,6 @@ self.onInit = function () {
 
             // не добавлять geotiff фотки на экран со списком NDVI
             if (self.ctx.datasources[0].dataKeys.length > 2) {
-                const layers = map._layers
-                
                 map.eachLayer(function(layer){
                     if (layer.options.opacity < 1) {
                         layer.remove()
