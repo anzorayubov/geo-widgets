@@ -468,6 +468,11 @@ self.onInit = function () {
     })
 
     map.on("pm:cut", function (e) {})
+    
+    map.on('layeradd', debounce((e) => {
+        console.log('added')
+        $('#preloader').hide(500)
+    }), 2000)
 
     let polygonsCoordinates;
 
@@ -802,7 +807,8 @@ self.onInit = function () {
         exports.Emitter.Emitter.subscribe('updateMap', (url) => {
             $('.layers').removeClass('active')
             $(this).addClass('active')
-
+            $('#preloader').show(500)
+            
             self.ctx.data.forEach(data => {
                 const keyName = data.dataKey.name
     
