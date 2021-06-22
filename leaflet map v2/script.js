@@ -19,40 +19,7 @@ self.onInit = function () {
 
     $scope.info = []
 
-    // вывести в функцию InitToolBar()
-    // InitToolbar()
-    
-    // function InitToolbar() {
-    //     // добавление тулбара
-    //     try {
-    //         map.pm.addControls({
-    //             position: 'topleft',
-    //             drawCircle: false,
-    //             drawCircleMarker: false,
-    //             cutPolygon: true,
-    //             drawPolyline: false,
-    //             drawMarker: false
-    //         })
-    //         map.pm.setLang('ru')
-    //     } catch (e) {
-    //         console.log('TOOLBAR', e)
-    //     }
-    // }
-
-    // добавление тулбара
-    try {
-        map.pm.addControls({
-            position: 'topleft',
-            drawCircle: false,
-            drawCircleMarker: false,
-            cutPolygon: true,
-            drawPolyline: false,
-            drawMarker: false
-        })
-        map.pm.setLang('ru')
-    } catch (e) {
-        console.log('TOOLBAR', e)
-    }
+    createToolbar(map)
     
     function addGeoTiffMaps(url, polygonsCoordinates) {
         const dataType = url?.includes('.asc') ? 'asc' : 'tiff'
@@ -1019,6 +986,20 @@ self.onInit = function () {
         })
         
     }
+}
+
+function createToolbar(map) {
+    try {
+        map.pm.addControls({
+            position: 'topleft',
+            drawCircle: false,
+            drawCircleMarker: false,
+            cutPolygon: true,
+            drawPolyline: false,
+            drawMarker: false
+        })
+        map.pm.setLang('ru')
+    } catch (e) { console.log('can not create TOOLBAR', e) }
 }
 
 function notesBtn() {
