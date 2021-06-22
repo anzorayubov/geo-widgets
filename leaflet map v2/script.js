@@ -11,11 +11,33 @@ self.onInit = function () {
     const assetService = $injector.get(self.ctx.servicesMap.get('assetService'));
     const attributeService = $injector.get(self.ctx.servicesMap.get('attributeService'));
     const map = L.map("map")
+    const $scope = self.ctx.$scope
+
     googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
         maxZoom: 50, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }).addTo(map)
 
-    self.ctx.$scope.info = []
+    $scope.info = []
+
+    // вывести в функцию InitToolBar()
+    // InitToolbar()
+    
+    // function InitToolbar() {
+    //     // добавление тулбара
+    //     try {
+    //         map.pm.addControls({
+    //             position: 'topleft',
+    //             drawCircle: false,
+    //             drawCircleMarker: false,
+    //             cutPolygon: true,
+    //             drawPolyline: false,
+    //             drawMarker: false
+    //         })
+    //         map.pm.setLang('ru')
+    //     } catch (e) {
+    //         console.log('TOOLBAR', e)
+    //     }
+    // }
 
     // добавление тулбара
     try {
@@ -61,6 +83,34 @@ self.onInit = function () {
 
         async function drawLayer(data, dataType) {
             let maskPolygonCoordinates = [];
+
+            // вывести в функцию getPolygonsCoordinates
+
+            // getMask(polygonsCoordinates)
+
+            // function getMask(polygonsCoordinates) {
+            //     let maskPolygonCoordinates = [];
+
+            //     polygonsCoordinates.forEach((element) => {
+            //         if (element.length) {
+            //             element.forEach(el => {
+            //                 maskPolygonCoordinates.push([el.lng, el.lat])
+            //             })
+            //         } else {
+            //             maskPolygonCoordinates.push([element.lng, element.lat])
+            //         }
+            //     })
+
+            //     return {
+            //         "type": "Feature",
+            //         "properties": {},
+            //         "geometry": {
+            //             "type": "Polygon",
+            //             "coordinates": [maskPolygonCoordinates]
+            //         }
+            //     }
+            // }
+
             polygonsCoordinates.forEach((element) => {
                 if (element.length) {
                     element.forEach(el => {
@@ -71,6 +121,8 @@ self.onInit = function () {
                 }
             })
             
+            // const mask = getMask(polygonsCoordinates)
+
             const mask = {
                 "type": "Feature",
                 "properties": {},
@@ -87,7 +139,7 @@ self.onInit = function () {
                 else if (dataType === 'tiff')
                     s = await L.ScalarField.fromGeoTIFF(data)
             } catch (err) {
-                 console.log('error in L.ScalarField.from...()', err)
+                console.log('error in L.ScalarField.from...()', err)
                 return
             }
 
@@ -119,7 +171,22 @@ self.onInit = function () {
                         }
                     }, 2000)
                 }
+                
+                // removeUnnecessaryTools(map)
+                // function removeUnnecessaryTools(map) {
+                //     map.pm.addControls({
+                //         position: 'topleft',
+                //         drawCircle: false,
+                //         drawCircleMarker: false,
+                //         cutPolygon: true,
+                //         drawPolyline: false,
+                //         drawMarker: false,
+                //         drawPolygon: false,
+                //         drawRectangle: false
+                //     })
+                // }
 
+                // вывести в removeUnnecessaryTools(map)
                 // выпиливаем ненужные инструменты
                 map.pm.addControls({
                     position: 'topleft',
@@ -143,7 +210,7 @@ self.onInit = function () {
             }
 
             /* dynamic filtering */
-            self.ctx.$scope.sliderChanged = function (e) {
+            $scope.sliderChanged = function (e) {
                 let h = e.value
                 let f = function (v) {
                     return v >= 0 && v <= h
@@ -165,6 +232,7 @@ self.onInit = function () {
             
             createChart(linearNdvi)
             
+            // вынести за пределы onInit
             function getNeededPercentile(percentile = 0.33, linearNdvi) {
                 const indexOfPercentile = parseInt((linearNdvi.length * percentile).toFixed(0))
                 return linearNdvi[indexOfPercentile]
@@ -187,7 +255,60 @@ self.onInit = function () {
 
             const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
             const slider = document.getElementById('slider')
-                
+            
+            // InitSlider(layer, mid_1, mid_2, linearNdvi)
+
+            // function InitSlider(layer, mid_1, mid_2, linearNdvi) {
+            //     const slider = document.getElementById('slider')
+            //     try {
+            //         noUiSlider.create(slider, {
+            //             start: [0, mid_1, mid_2, 99.999],
+            //             connect: true,
+            //             range: {'min': 0, 'max': 99.999},
+            //             tooltips: [true, true, true, true],
+            //             format: {
+            //                 to: function (value) {
+            //                     return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
+            //                 },
+            //                 from: function (value) {
+            //                     return +value
+            //                 }
+            //             }
+            //         })
+            //     } catch (e) {
+            //         slider.noUiSlider.updateOptions({
+            //             start: [0, mid_1, mid_2, 99.999],
+            //             format: {
+            //                 to: function (value) {
+            //                     return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
+            //                 },
+            //                 from: function (value) {
+            //                     return +value
+            //                 }
+            //             }
+            //         })
+            //     }
+    
+            //     slider.noUiSlider.on('change.one', function (e) {
+            //         const percentage = []
+            //         const values = []
+    
+            //         e.forEach(num => {
+            //             values.push(+num.slice(num.indexOf('|') + 1, num.length))
+            //             percentage.push(parseInt(num.slice(0, num.indexOf('|'))))
+            //             sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
+            //         })
+            //         const scale = chroma.scale('OrRd').classes(values)
+            //         layer.setColor(scale)
+    
+            //         setArea(percentage)
+    
+            //         ctx.detectChanges()
+            //     })
+            // }
+
+            // вывести в функцию InitSlider(mid1, mid2, layer)
+
             function sliderInit() {
                 noUiSlider.create(slider, {
                     start: [0, mid_1, mid_2, 99.999],
@@ -238,6 +359,42 @@ self.onInit = function () {
 
                 ctx.detectChanges()
             })
+            //
+
+            // вывести в функцию InitIUconnectsSlider()
+            
+            // self.ctx.scope & layer
+            // InitIUconnectsSlider($scope, layer, minValue, maxValue, mid_1, mid_2, linearNdvi, ctx, chroma)
+
+            // function InitIUconnectsSlider($scope, layer, minValue, maxValue, mid_1, mid_2, linearNdvi, ctx, chroma) {
+            //     const IUconnects = document.getElementsByClassName("noUi-connects")
+            //     IUconnects[0].childNodes.forEach((item, index) => {
+            //         item.style.backgroundColor = colors[index]
+            //     })
+            //     let slide_toggle = sessionStorage.getItem('slide_toggle')
+
+            //     if (slide_toggle) {
+            //         try {
+            //             slide_toggle = JSON.parse(slide_toggle)
+            //             if (slide_toggle.sliderChanged) {
+            //                 $scope.isSlide_toggleChecked = true
+    
+            //                 $('#slider').css('pointer-events', 'auto')
+    
+            //                 layer.setColor(chroma.scale('OrRd').classes([minValue,
+            //                     getNeededPercentile(mid_1 / 100, linearNdvi), getNeededPercentile(mid_2 / 100, linearNdvi), maxValue]))
+    
+            //                 ctx.detectChanges()
+            //             }
+            //         } catch (e) {
+            //             console.log('try slide_toggle', e)
+            //         }
+            //     } else {
+            //         const scale = chroma.scale(["#000000", "#FFFFFF"]).domain(s.range)
+            //         layer.setColor(scale)
+            //     }
+            // }
+
 
             const IUconnects = document.getElementsByClassName("noUi-connects")
             IUconnects[0].childNodes.forEach((item, index) => {
@@ -249,7 +406,7 @@ self.onInit = function () {
                 try {
                     slide_toggle = JSON.parse(slide_toggle)
                     if (slide_toggle.sliderChanged) {
-                        self.ctx.$scope.isSlide_toggleChecked = true
+                        $scope.isSlide_toggleChecked = true
 
                         $('#slider').css('pointer-events', 'auto')
 
@@ -265,7 +422,9 @@ self.onInit = function () {
                 const scale = chroma.scale(["#000000", "#FFFFFF"]).domain(s.range)
                 layer.setColor(scale)
             }
+            //
 
+            // вывести в функцию InitChangeModeButton()
             self.ctx.$scope.changeMode = function (i, event) {
                 if (event.checked) {
                     $('#slider').css('pointer-events', 'auto')
@@ -286,9 +445,23 @@ self.onInit = function () {
                     }
                 }
             }
+            //
 
             low.addEventListener('input', updateGradient)
             high.addEventListener('input', updateGradient)
+            
+            // вывести в функцию onClickAndMouseMoveFunctions()
+
+            // layer.on("click", updatePopup(e) )
+            // layer.on("mousemove", updatePopup(e) )
+            
+            // function updatePopup(e) {
+            //     if (e.value !== null) {
+            //         const val = e.value.toFixed(3)
+            //         const html = `<span class="popupText">${val}</span>`
+            //         L.popup().setLatLng(e.latlng).setContent(html).openOn(map)
+            //     }
+            // }
 
             layer.on("click", function (e) {
                 if (e.value !== null) {
@@ -311,6 +484,7 @@ self.onInit = function () {
                         .openOn(map)
                 }
             })
+            //
 
             // hoverToFirstPolygon(layer)
              map.fitBounds(layer.getBounds(), {animate: false})
@@ -376,6 +550,12 @@ self.onInit = function () {
                     })
             })
         }
+
+        // попробовать этот код
+
+        // polygon.on('pm:update', updateAsset(e))
+        // polygon.on('pm:edit', updateAsset(e))
+        // polygon.on('pm:cut', updateAsset(e))
 
         polygon.on('pm:update', e => {
             updateAsset(e)
@@ -459,6 +639,7 @@ self.onInit = function () {
                 try {
                     exports.Emitter.Emitter.emit('updatePolygonsList', asset)
                 } catch (e) {
+                    console.log('Emitter, row:642', e)
                 }
             }, 1000)
 
@@ -467,14 +648,15 @@ self.onInit = function () {
         })
     })
 
-    map.on("pm:cut", function (e) {})
+    // map.on("pm:cut", function (e) {})
     
     map.on('layeradd', debounce((e) => {
-        console.log('added')
         $('#preloader').hide(500)
     }), 2000)
 
     let polygonsCoordinates;
+
+    // ToDo посмотреть что можно сделать..
 
     getTBkeys()
 
@@ -485,7 +667,7 @@ self.onInit = function () {
 
             if (keyName === "polygonsCoordinates") {
                 polygonsCoordinates = JSON.parse(data.data[0][1])
-                createPolygons(JSON.parse(data.data[0][1]), polygonName)
+                createPolygons(polygonsCoordinates, polygonName)
             }
 
             if (keyName === "tiffMaps" && data.data[0][1] !== '') {
