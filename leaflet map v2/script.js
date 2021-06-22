@@ -49,55 +49,9 @@ self.onInit = function () {
         }
 
         async function drawLayer(data, dataType) {
-            let maskPolygonCoordinates = [];
-
-            // вывести в функцию getPolygonsCoordinates
-
-            // getMask(polygonsCoordinates)
-
-            // function getMask(polygonsCoordinates) {
-            //     let maskPolygonCoordinates = [];
-
-            //     polygonsCoordinates.forEach((element) => {
-            //         if (element.length) {
-            //             element.forEach(el => {
-            //                 maskPolygonCoordinates.push([el.lng, el.lat])
-            //             })
-            //         } else {
-            //             maskPolygonCoordinates.push([element.lng, element.lat])
-            //         }
-            //     })
-
-            //     return {
-            //         "type": "Feature",
-            //         "properties": {},
-            //         "geometry": {
-            //             "type": "Polygon",
-            //             "coordinates": [maskPolygonCoordinates]
-            //         }
-            //     }
-            // }
-
-            polygonsCoordinates.forEach((element) => {
-                if (element.length) {
-                    element.forEach(el => {
-                        maskPolygonCoordinates.push([el.lng, el.lat])
-                    })
-                } else {
-                    maskPolygonCoordinates.push([element.lng, element.lat])
-                }
-            })
             
-            // const mask = getMask(polygonsCoordinates)
-
-            const mask = {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [maskPolygonCoordinates]
-                }
-            }
+            const mask = getMask(polygonsCoordinates)  
+            
             let s
 
             try {
@@ -985,6 +939,29 @@ self.onInit = function () {
                 [{key: 'infoFromModal', value: infoFromModalArray}]).subscribe(() => {})
         })
         
+    }
+}
+
+function getMask(polygonsCoordinates) {
+    let maskPolygonCoordinates = [];
+
+    polygonsCoordinates.forEach((element) => {
+        if (element.length) {
+            element.forEach(el => {
+                maskPolygonCoordinates.push([el.lng, el.lat])
+            })
+        } else {
+            maskPolygonCoordinates.push([element.lng, element.lat])
+        }
+    })
+
+    return {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [maskPolygonCoordinates]
+        }
     }
 }
 
