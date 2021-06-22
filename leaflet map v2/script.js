@@ -82,6 +82,8 @@ self.onInit = function () {
                     layer.addTo(map)
                 }, 1000)
                 
+                // if isNDVIImage
+                
                 if (s.range[1] <= 1) {
                     setTimeout(function () {
                         let slide_toggle = sessionStorage.getItem('slide_toggle')
@@ -93,32 +95,7 @@ self.onInit = function () {
                     }, 2000)
                 }
                 
-                // removeUnnecessaryTools(map)
-                // function removeUnnecessaryTools(map) {
-                //     map.pm.addControls({
-                //         position: 'topleft',
-                //         drawCircle: false,
-                //         drawCircleMarker: false,
-                //         cutPolygon: true,
-                //         drawPolyline: false,
-                //         drawMarker: false,
-                //         drawPolygon: false,
-                //         drawRectangle: false
-                //     })
-                // }
-
-                // вывести в removeUnnecessaryTools(map)
-                // выпиливаем ненужные инструменты
-                map.pm.addControls({
-                    position: 'topleft',
-                    drawCircle: false,
-                    drawCircleMarker: false,
-                    cutPolygon: true,
-                    drawPolyline: false,
-                    drawMarker: false,
-                    drawPolygon: false,
-                    drawRectangle: false
-                })
+                removeUnnecessaryToolsAtToolbar(map)
             }
 
             // Dynamic styles
@@ -940,6 +917,19 @@ self.onInit = function () {
         })
         
     }
+}
+
+function removeUnnecessaryToolsAtToolbar(map) {
+    map.pm.addControls({
+        position: 'topleft',
+        drawCircle: false,
+        drawCircleMarker: false,
+        cutPolygon: true,
+        drawPolyline: false,
+        drawMarker: false,
+        drawPolygon: false,
+        drawRectangle: false
+    })
 }
 
 function getMask(polygonsCoordinates) {
