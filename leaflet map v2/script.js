@@ -106,19 +106,13 @@ self.onInit = function () {
             }
 
             /* dynamic filtering */
-            $scope.sliderChanged = function (e) {
-                let h = e.value
-                let f = function (v) {
-                    return v >= 0 && v <= h
-                }
+            $scope.sliderChanged = (e) => {
+                const f = (v) => v >= 0 && v <= e.value
                 layer.setFilter(f)
             }
 
             const minValue = +s.range[0].toFixed(2)
             const maxValue = +s.range[1].toFixed(2)
-
-            let mid_1 = 33
-            let mid_2 = 66
 
             const linearNdvi = []
             s.grid.forEach(x => {
@@ -130,9 +124,12 @@ self.onInit = function () {
 
             $('.minValue').text(minValue)
             $('.maxValue').text(maxValue)
-
+            
+            let mid_1 = 33
+            let mid_2 = 66
+            
             let rulerPercentage = sessionStorage.getItem('rulerPercentage')
-
+            
             if (rulerPercentage) {
                 try {
                     rulerPercentage = JSON.parse(rulerPercentage)
