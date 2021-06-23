@@ -146,110 +146,7 @@ self.onInit = function () {
             const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
             const slider = document.getElementById('slider')
             
-            // InitSlider(layer, mid_1, mid_2, linearNdvi)
-
-            // function InitSlider(layer, mid_1, mid_2, linearNdvi) {
-            //     const slider = document.getElementById('slider')
-            //     try {
-            //         noUiSlider.create(slider, {
-            //             start: [0, mid_1, mid_2, 99.999],
-            //             connect: true,
-            //             range: {'min': 0, 'max': 99.999},
-            //             tooltips: [true, true, true, true],
-            //             format: {
-            //                 to: function (value) {
-            //                     return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
-            //                 },
-            //                 from: function (value) {
-            //                     return +value
-            //                 }
-            //             }
-            //         })
-            //     } catch (e) {
-            //         slider.noUiSlider.updateOptions({
-            //             start: [0, mid_1, mid_2, 99.999],
-            //             format: {
-            //                 to: function (value) {
-            //                     return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
-            //                 },
-            //                 from: function (value) {
-            //                     return +value
-            //                 }
-            //             }
-            //         })
-            //     }
-    
-            //     slider.noUiSlider.on('change.one', function (e) {
-            //         const percentage = []
-            //         const values = []
-    
-            //         e.forEach(num => {
-            //             values.push(+num.slice(num.indexOf('|') + 1, num.length))
-            //             percentage.push(parseInt(num.slice(0, num.indexOf('|'))))
-            //             sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
-            //         })
-            //         const scale = chroma.scale('OrRd').classes(values)
-            //         layer.setColor(scale)
-    
-            //         setArea(percentage)
-    
-            //         ctx.detectChanges()
-            //     })
-            // }
-
-            // вывести в функцию InitSlider(mid1, mid2, layer)
-
-            function sliderInit() {
-                noUiSlider.create(slider, {
-                    start: [0, mid_1, mid_2, 99.999],
-                    connect: true,
-                    range: {'min': 0, 'max': 99.999},
-                    tooltips: [true, true, true, true],
-                    format: {
-                        to: function (value) {
-                            return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
-                        },
-                        from: function (value) {
-                            return +value
-                        }
-                    }
-                })
-            }
-            
-            try {
-                sliderInit()
-                
-            } catch (e) {
-                slider.noUiSlider.updateOptions({
-                    start: [0, mid_1, mid_2, 99.999],
-                    format: {
-                        to: function (value) {
-                            return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
-                        },
-                        from: function (value) {
-                            return +value
-                        }
-                    }
-                })
-            }
-
-            slider.noUiSlider.on('change.one', function (e) {
-                const percentage = []
-                const values = []
-
-                e.forEach(num => {
-                    values.push(+num.slice(num.indexOf('|') + 1, num.length))
-                    percentage.push(parseInt(num.slice(0, num.indexOf('|'))))
-                    sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
-                })
-                const scale = chroma.scale('OrRd').classes(values)
-                layer.setColor(scale)
-
-                setArea(percentage)
-
-                ctx.detectChanges()
-            })
-            //
+            createSliderWithThreeSections(layer, mid_1, mid_2, linearNdvi)
 
             // вывести в функцию InitIUconnectsSlider()
             
@@ -908,6 +805,55 @@ self.onInit = function () {
         })
         
     }
+}
+
+function createSliderWithThreeSections(layer, mid_1, mid_2, linearNdvi) {
+    const slider = document.getElementById('slider')
+    try {
+        noUiSlider.create(slider, {
+            start: [0, mid_1, mid_2, 99.999],
+            connect: true,
+            range: {'min': 0, 'max': 99.999},
+            tooltips: [true, true, true, true],
+            format: {
+                to: function (value) {
+                    return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
+                },
+                from: function (value) {
+                    return +value
+                }
+            }
+        })
+    } catch (e) {
+        slider.noUiSlider.updateOptions({
+            start: [0, mid_1, mid_2, 99.999],
+            format: {
+                to: function (value) {
+                    return `${value.toFixed(1)}% | ${getNeededPercentile(value / 100, linearNdvi)?.toFixed(2)}`
+                },
+                from: function (value) {
+                    return +value
+                }
+            }
+        })
+    }
+
+    slider.noUiSlider.on('change.one', function (e) {
+        const percentage = []
+        const values = []
+
+        e.forEach(num => {
+            values.push(+num.slice(num.indexOf('|') + 1, num.length))
+            percentage.push(parseInt(num.slice(0, num.indexOf('|'))))
+            sessionStorage.setItem('rulerPercentage', JSON.stringify(percentage))
+        })
+        const scale = chroma.scale('OrRd').classes(values)
+        layer.setColor(scale)
+
+        setArea(percentage)
+
+        ctx.detectChanges()
+    })
 }
 
 function getNeededPercentile(percentile = 0.33, linearNdvi) {
