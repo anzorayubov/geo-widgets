@@ -141,7 +141,6 @@ self.onInit = function () {
             }
 
             const colors = ["#fff7ec", "#fc8d59", "#7f0000"]
-            const slider = document.getElementById('slider')
             
             createSliderWithThreeSections(layer, mid_1, mid_2, linearNdvi)
 
