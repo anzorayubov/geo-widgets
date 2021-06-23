@@ -82,8 +82,6 @@ self.onInit = function () {
                     layer.addTo(map)
                 }, 1000)
                 
-                // if isNDVIImage
-                
                 if (s.range[1] <= 1) {
                     setTimeout(function () {
                         let slide_toggle = sessionStorage.getItem('slide_toggle')
@@ -129,12 +127,6 @@ self.onInit = function () {
             linearNdvi.sort()
             
             createChart(linearNdvi)
-            
-            // вынести за пределы onInit
-            function getNeededPercentile(percentile = 0.33, linearNdvi) {
-                const indexOfPercentile = parseInt((linearNdvi.length * percentile).toFixed(0))
-                return linearNdvi[indexOfPercentile]
-            }
 
             $('.minValue').text(minValue)
             $('.maxValue').text(maxValue)
@@ -900,7 +892,6 @@ self.onInit = function () {
         })
     } catch (e) {}
     
-
     function infoBtn() {
         $('.optionally_info_btn').click(() => {
             $('.modal').toggleClass('move')
@@ -917,6 +908,11 @@ self.onInit = function () {
         })
         
     }
+}
+
+function getNeededPercentile(percentile = 0.33, linearNdvi) {
+    const indexOfPercentile = parseInt((linearNdvi.length * percentile).toFixed(0))
+    return linearNdvi[indexOfPercentile]
 }
 
 function removeUnnecessaryToolsAtToolbar(map) {
